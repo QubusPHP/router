@@ -1,0 +1,8 @@
+.DS_Store
+/nbproject/
+src/MyControllers/
+vendor/
+index.php
+.htaccess
+.phpcs-cache
+CustomRouterRules.php

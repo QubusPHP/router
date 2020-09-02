@@ -1,0 +1,24 @@
+language: php
+
+php:
+  - 7.3
+  - 7.4
+
+env:
+  matrix:
+  - COMPOSER_FLAGS="--prefer-lowest"
+  - COMPOSER_FLAGS=""
+
+before_script:
+  - travis_retry composer self-update
+  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-source
+
+script:
+  - vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml
+  - vendor/bin/phpcs --standard=PSR2 ./src
+
+after_script:
+  - php vendor/bin/coveralls -v
+
+notifications:
+  email: false
