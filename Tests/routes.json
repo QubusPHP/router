@@ -1,0 +1,31 @@
+{
+   "routes":[
+      {
+         "group":{
+            "routes":[
+               {
+                  "path":"/post/{postId}/comment/{commentId}/",
+                  "method":["GET"],
+                  "callback":"TestController@expectsInjectedParams",
+                  "name":"post.comment",
+                  "namespace": "\\Qubus\\Tests\\Routing\\Controllers"
+               },
+               {
+                  "path":"/post/{postId}/",
+                  "method":["GET"],
+                  "callback":"TestController@postId",
+                  "name":"post",
+                  "namespace": "\\Qubus\\Tests\\Routing\\Controllers"
+               }
+            ]
+         }
+      },
+      {
+         "path":"/say-hello/",
+         "method":["GET"],
+         "callback":"TestController@returnHelloWorld",
+         "name":"hello.world",
+         "namespace": "\\Qubus\\Tests\\Routing\\Controllers"
+      }
+   ]
+}

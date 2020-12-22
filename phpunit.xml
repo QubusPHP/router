@@ -11,12 +11,7 @@
          stopOnFailure="false">
     <testsuites>
         <testsuite name="Qubus Router Test Suite">
-            <directory>tests</directory>
+            <directory>./Tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
-        </whitelist>
-    </filter>
 </phpunit>
