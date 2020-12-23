@@ -65,7 +65,7 @@ final class Router implements Mappable
 
     protected Request $request;
 
-    public string $version = '1.1.0';
+    public string $version = '1.1.1';
 
     /** @var array $routes */
     protected array $routes = [];
