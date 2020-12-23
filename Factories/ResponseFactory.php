@@ -18,6 +18,7 @@ use Laminas\Diactoros\Response\EmptyResponse;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Qubus\Routing\Interfaces\Responsable;
 
 final class ResponseFactory implements ResponsableFactory
 {
