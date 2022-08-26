@@ -4,15 +4,18 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
 declare(strict_types=1);
 
 namespace Qubus\Routing\Interfaces;
+
+use Psr\Http\Message\RequestInterface;
 
 interface ApiResourceController
 {
@@ -23,27 +26,21 @@ interface ApiResourceController
 
     /**
      * Display the specified resource.
-     *
-     * @param  int $id
      */
-    public function show($id);
+    public function show(int|string $id);
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store();
+    public function store(RequestInterface $request);
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  int $id
      */
-    public function update($id);
+    public function update(RequestInterface $request);
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int $id
      */
-    public function destroy($id);
+    public function destroy(int|string $id);
 }

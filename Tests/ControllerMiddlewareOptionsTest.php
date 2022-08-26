@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\Controller\ControllerMiddlewareOptions;
 
@@ -14,8 +15,8 @@ class ControllerMiddlewareOptionsTest extends TestCase
     {
         $options = new ControllerMiddlewareOptions();
 
-        $this->assertFalse($options->excludedForMethod('foo'));
-        $this->assertFalse($options->excludedForMethod('bar'));
+        Assert::assertFalse($options->excludedForMethod('foo'));
+        Assert::assertFalse($options->excludedForMethod('bar'));
     }
 
     /** @test */
@@ -23,7 +24,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     {
         $options = new ControllerMiddlewareOptions();
 
-        $this->assertSame($options, $options->only('foo'));
+        Assert::assertSame($options, $options->only('foo'));
     }
 
     /** @test */
@@ -33,8 +34,8 @@ class ControllerMiddlewareOptionsTest extends TestCase
 
         $options->only('foo');
 
-        $this->assertFalse($options->excludedForMethod('foo'));
-        $this->assertTrue($options->excludedForMethod('bar'));
+        Assert::assertFalse($options->excludedForMethod('foo'));
+        Assert::assertTrue($options->excludedForMethod('bar'));
     }
 
     /** @test */
@@ -44,9 +45,9 @@ class ControllerMiddlewareOptionsTest extends TestCase
 
         $options->only(['foo', 'bar']);
 
-        $this->assertFalse($options->excludedForMethod('foo'));
-        $this->assertFalse($options->excludedForMethod('bar'));
-        $this->assertTrue($options->excludedForMethod('baz'));
+        Assert::assertFalse($options->excludedForMethod('foo'));
+        Assert::assertFalse($options->excludedForMethod('bar'));
+        Assert::assertTrue($options->excludedForMethod('baz'));
     }
 
     /** @test */
@@ -54,7 +55,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     {
         $options = new ControllerMiddlewareOptions();
 
-        $this->assertSame($options, $options->except('foo'));
+        Assert::assertSame($options, $options->except('foo'));
     }
 
     /** @test */
@@ -64,8 +65,8 @@ class ControllerMiddlewareOptionsTest extends TestCase
 
         $options->except('foo');
 
-        $this->assertTrue($options->excludedForMethod('foo'));
-        $this->assertFalse($options->excludedForMethod('bar'));
+        Assert::assertTrue($options->excludedForMethod('foo'));
+        Assert::assertFalse($options->excludedForMethod('bar'));
     }
 
     /** @test */
@@ -75,8 +76,8 @@ class ControllerMiddlewareOptionsTest extends TestCase
 
         $options->except(['foo', 'bar']);
 
-        $this->assertTrue($options->excludedForMethod('foo'));
-        $this->assertTrue($options->excludedForMethod('bar'));
-        $this->assertFalse($options->excludedForMethod('baz'));
+        Assert::assertTrue($options->excludedForMethod('foo'));
+        Assert::assertTrue($options->excludedForMethod('bar'));
+        Assert::assertFalse($options->excludedForMethod('baz'));
     }
 }

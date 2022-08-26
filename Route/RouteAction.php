@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -33,26 +34,25 @@ use function is_callable;
 use function is_object;
 use function is_string;
 use function method_exists;
+use function sprintf;
 use function stripos;
 
 class RouteAction
 {
-    protected $callable;
-    protected $controller;
-    protected $invoker;
-    protected $controllerName;
-    protected $controllerMethod;
-    protected $namespace;
+    protected mixed $callable;
+    protected mixed $controller;
+    protected ?Invoker $invoker = null;
+    protected ?string $controllerName = null;
+    protected ?string $controllerMethod = null;
+    protected ?string $namespace = null;
 
     /**
      * Constructor
      *
      * Actions created with a Controller string (e.g. `MyController@myMethod`) are lazy loaded
      * and the Controller class will only be instantiated when required.
-     *
-     * @param mixed $action
      */
-    public function __construct($action, ?string $namespace = null, ?Invoker $invoker = null)
+    public function __construct(mixed $action, ?string $namespace = null, ?Invoker $invoker = null)
     {
         $this->namespace = $namespace;
         $this->invoker   = $invoker;
@@ -61,10 +61,8 @@ class RouteAction
 
     /**
      * Invoke the action.
-     *
-     * @return mixed
      */
-    public function invoke(ServerRequestInterface $request, RouteParams $params)
+    public function invoke(ServerRequestInterface $request, RouteParams $params): mixed
     {
         $callable = $this->callable;
         /**
@@ -72,13 +70,15 @@ class RouteAction
          * to get the callable.
          */
         if ($this->isControllerAction()) {
-            $callable = call_user_func($this->callable);
+            $callable = call_user_func(callback: $this->callable);
         }
         /**
          * Call the target action with any provided params.
          */
         if ($this->invoker) {
-            return $this->invoker->setRequest($request)->call($callable, $params->toArray());
+            return $this->invoker->setRequest(
+                request: $request
+            )->call(callable: $callable, parameters: $params->toArray());
         } else {
             return call_user_func($callable, $params);
         }
@@ -87,15 +87,13 @@ class RouteAction
     /**
      * If the action is a Controller string, a factory callable is
      * returned to allow for lazy loading.
-     *
-     * @param  mixed $action
      */
-    private function createCallableFromAction($action): callable
+    private function createCallableFromAction(mixed $action): callable
     {
         /**
          * Check if this looks like it could be a class/method string.
          */
-        if (! is_callable($action) && is_string($action)) {
+        if (! is_callable(value: $action) && is_string(value: $action)) {
             return $this->convertClassStringToFactory($action);
         }
         return $action;
@@ -112,9 +110,9 @@ class RouteAction
     /**
      * Get the Controller for this action. The Controller will only be created once.
      *
-     * @return string|null Returns null if this is not a Controller based action.
+     * @return string|object|null Returns null if this is not a Controller based action.
      */
-    private function getController()
+    private function getController(): string|null|object
     {
         if (empty($this->controllerName)) {
             return null;
@@ -122,24 +120,21 @@ class RouteAction
         if (isset($this->controller)) {
             return $this->controller;
         }
-        $this->controller = $this->createControllerFromClassName($this->controllerName);
+        $this->controller = $this->createControllerFromClassName(className: $this->controllerName);
         return $this->controller;
     }
 
     /**
      * Instantiate a Controller object from the provided class name.
-     *
-     * @param  string $className
-     * @return mixed
      */
-    private function createControllerFromClassName($className)
+    private function createControllerFromClassName(string $className): mixed
     {
         /**
          * If we can, use the container to build the Controller so that
          * Constructor params can be injected where possible.
          */
         if ($this->invoker) {
-            return $this->invoker->getContainer()->get($className);
+            return $this->invoker->getContainer()->get(id: $className);
         }
         return new $className();
     }
@@ -165,45 +160,53 @@ class RouteAction
             return [];
         }
         $allControllerMiddleware = array_filter(
-            $this->getController()->getControllerMiddleware(),
-            function (ControllerMiddlewarePipe $middleware) {
-                return ! $middleware->excludedForMethod($this->controllerMethod);
+            array: $this->getController()->getControllerMiddleware(),
+            callback: function (ControllerMiddlewarePipe $middleware) {
+                return ! $middleware->excludedForMethod(method: $this->controllerMethod);
             }
         );
         return array_map(
-            function ($controllerMiddleware) {
+            callback: function ($controllerMiddleware) {
                 return $controllerMiddleware->middleware();
             },
-            $allControllerMiddleware
+            array: $allControllerMiddleware
         );
     }
 
     /**
      * Create a factory Closure for the given Controller string.
      *
-     * @param  string $string e.g. `MyController@myMethod`
+     * @param string $string e.g. `MyController@myMethod`
+     * @throws RouteParseException
+     * @throws RouteControllerNotFoundException
+     * @throws RouteMethodNotFoundException
      */
     private function convertClassStringToFactory(string $string): Closure
     {
         $this->controllerName   = null;
         $this->controllerMethod = null;
 
-        $string = $this->resolveController($string);
+        $string = $this->resolveController(controller: $string);
 
-        @[$className, $method] = explode('@', $string);
+        @[$className, $method] = explode(separator: '@', string: $string);
 
         if (! isset($className) || ! isset($method)) {
-            throw new RouteParseException('Could not parse route controller from string: `' . $string . '`');
+            throw new RouteParseException(
+                message: sprintf(
+                    'Could not parse route controller from string: `%s`',
+                    $string
+                )
+            );
         }
 
         if (! class_exists($className)) {
             throw new RouteControllerNotFoundException(
-                'Could not find route controller class: `' . $className . '`'
+                message: sprintf('Could not find route controller class: `%s`', $className)
             );
         }
         if (! method_exists($className, $method)) {
             throw new RouteMethodNotFoundException(
-                'Route controller class: `' . $className . '` does not have a `' . $method . '` method'
+                message: sprintf('Route controller class: `%s` does not have a `%s` method', $className, $method)
             );
         }
 
@@ -225,7 +228,7 @@ class RouteAction
     }
 
     /**
-     * Get the human readable name of this action.
+     * Get the human-readable name of this action.
      */
     public function getActionName(): string
     {
@@ -234,7 +237,7 @@ class RouteAction
             return $this->controllerName . '@' . $this->controllerMethod;
         }
         if (is_callable($this->callable, false, $callableName)) {
-            [$controller, $method] = explode('::', $callableName);
+            [$controller, $method] = explode(separator: '::', string: (string) $callableName);
 
             if ($controller === 'Closure') {
                 return $controller;
@@ -248,18 +251,24 @@ class RouteAction
      * @param callable|object|string|string[] $controller
      * @return callable|object|string|string[]
      */
-    private function resolveController($controller)
+    private function resolveController(array|callable|object|string $controller): array|callable|object|string
     {
-        if (null !== $this->namespace && (is_string($controller) || ! $controller instanceof Closure)) {
+        if (null !== $this->namespace && (is_string(value: $controller) || ! $controller instanceof Closure)) {
             if (
-                is_string($controller) &&
-                ! class_exists($controller) &&
-                false === stripos($controller, $this->namespace)
+                is_string(value: $controller) &&
+                ! class_exists(class: $controller) &&
+                false === stripos(haystack: $controller, needle: $this->namespace)
             ) {
-                $controller = is_callable($controller) ? $controller : $this->namespace . '\\' . $controller;
+                $controller = is_callable(value: $controller) ? $controller : $this->namespace . '\\' . $controller;
             }
 
-            if (is_array($controller) && (! is_object($controller[0]) && ! class_exists($controller[0]))) {
+            if (
+                is_array(value: $controller)
+                && (
+                    ! is_object(value: $controller[0])
+                && ! class_exists(class: $controller[0])
+                )
+            ) {
                 $controller[0] = $this->namespace . '\\' . $controller[0];
             }
         }

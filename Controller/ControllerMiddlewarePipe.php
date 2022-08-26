@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -18,17 +19,14 @@ use Psr\Http\Server\MiddlewareInterface;
 
 final class ControllerMiddlewarePipe
 {
-    /** @var MiddlewareInterface|array $middleware */
-    protected $middleware;
+    protected array|MiddlewareInterface $middleware;
 
     protected ControllerMiddlewareOptions $options;
 
     /**
      * Constructor
-     *
-     * @param MiddlewareInterface|array $middleware
      */
-    public function __construct($middleware, ControllerMiddlewareOptions $options)
+    public function __construct(MiddlewareInterface|array $middleware, ControllerMiddlewareOptions $options)
     {
         $this->middleware = $middleware;
         $this->options    = $options;
@@ -36,10 +34,8 @@ final class ControllerMiddlewarePipe
 
     /**
      * Get the Middleware.
-     *
-     * @return MiddlewareInterface|string
      */
-    public function middleware()
+    public function middleware(): MiddlewareInterface|array|string
     {
         return $this->middleware;
     }
@@ -54,10 +50,8 @@ final class ControllerMiddlewarePipe
 
     /**
      * Is a specific method excluded by the options set on this object.
-     *
-     * @param string $method
      */
-    public function excludedForMethod($method): bool
+    public function excludedForMethod(string $method): bool
     {
         return $this->options->excludedForMethod($method);
     }

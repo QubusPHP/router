@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -16,23 +17,22 @@ namespace Qubus\Routing\Factories;
 
 use Invoker\InvokerInterface;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
-use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Route\Route;
 
 final class RouteFactory implements RoutableFactory
 {
-    protected static ?InvokerInterface $invoker;
+    protected static ?InvokerInterface $invoker = null;
 
-    protected static ?MiddlewareResolver $middlewareResolver;
+    protected static ?MiddlewareResolver $middlewareResolver = null;
 
     public static function create(
         array $methods,
         string $uri,
-        $action,
+        mixed $action,
         ?string $defaultNamespace = null,
         ?InvokerInterface $invoker = null,
         ?MiddlewareResolver $middlewareResolver = null
-    ): Routable {
+    ): Route {
         return new Route(
             $methods,
             $uri,

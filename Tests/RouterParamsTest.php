@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\Route\RouteParams;
 
@@ -14,7 +15,7 @@ class RouterParamsTest extends TestCase
     {
         $params = new RouteParams(['key' => 'value']);
 
-        $this->assertSame('value', $params->key);
+        Assert::assertSame('value', $params->key);
     }
 
     /** @test */
@@ -34,8 +35,8 @@ class RouterParamsTest extends TestCase
             $values[] = $value;
         }
 
-        $this->assertSame(['key1', 'key2', 'key3'], $keys);
-        $this->assertSame(['value1', 'value2', 'value3'], $values);
+        Assert::assertSame(['key1', 'key2', 'key3'], $keys);
+        Assert::assertSame(['value1', 'value2', 'value3'], $values);
     }
 
     /** @test */
@@ -43,7 +44,7 @@ class RouterParamsTest extends TestCase
     {
         $params = new RouteParams(['key' => 'value']);
 
-        $this->assertNull($params->invalid);
+        Assert::assertNull($params->invalid);
     }
 
     /** @test */
@@ -52,6 +53,6 @@ class RouterParamsTest extends TestCase
         $data   = ['key1' => 'value1', 'key2' => 'value2'];
         $params = new RouteParams($data);
 
-        $this->assertSame($data, $params->toArray());
+        Assert::assertSame($data, $params->toArray());
     }
 }

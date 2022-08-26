@@ -2,8 +2,11 @@
 /nbproject/
 /MyControllers/
 /vendor/
+.idea
 .htaccess
+.php-cs-fixer.cache
 .phpcs-cache
+.phpunit.result.cache
 composer.lock
 CustomRouterRules.php
 index.php

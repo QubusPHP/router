@@ -6,6 +6,7 @@ namespace Qubus\Tests\Routing;
 
 use Laminas\Diactoros\ServerRequest;
 use Mockery;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,11 +38,11 @@ class RouterMiddlewareTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(2, $count);
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('value', $response->getHeader('X-Key')[0]);
+        Assert::assertSame(2, $count);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('value', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -58,10 +59,10 @@ class RouterMiddlewareTest extends TestCase
         })->middleware(new AddHeaderMiddleware('X-Key', 'value'));
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('value', $response->getHeader('X-Key')[0]);
+        Assert::assertSame(1, $count);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('value', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -77,11 +78,11 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key1'));
-        $this->assertTrue($response->hasHeader('X-Key2'));
-        $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
-        $this->assertSame('123', $response->getHeader('X-Key2')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key1'));
+        Assert::assertTrue($response->hasHeader('X-Key2'));
+        Assert::assertSame('abc', $response->getHeader('X-Key1')[0]);
+        Assert::assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
     /** @test */
@@ -98,11 +99,11 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key1'));
-        $this->assertTrue($response->hasHeader('X-Key2'));
-        $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
-        $this->assertSame('123', $response->getHeader('X-Key2')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key1'));
+        Assert::assertTrue($response->hasHeader('X-Key2'));
+        Assert::assertSame('abc', $response->getHeader('X-Key1')[0]);
+        Assert::assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
     /** @test */
@@ -119,11 +120,11 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key1'));
-        $this->assertTrue($response->hasHeader('X-Key2'));
-        $this->assertSame('abc', $response->getHeader('X-Key1')[0]);
-        $this->assertSame('123', $response->getHeader('X-Key2')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key1'));
+        Assert::assertTrue($response->hasHeader('X-Key2'));
+        Assert::assertSame('abc', $response->getHeader('X-Key1')[0]);
+        Assert::assertSame('123', $response->getHeader('X-Key2')[0]);
     }
 
     /** @test */
@@ -135,7 +136,7 @@ class RouterMiddlewareTest extends TestCase
 
         $router->group(['middleware' => [new AddHeaderMiddleware('X-Key', 'abc')]], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -143,11 +144,11 @@ class RouterMiddlewareTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -159,7 +160,7 @@ class RouterMiddlewareTest extends TestCase
 
         $router->group(['middleware' => new AddHeaderMiddleware('X-Key', 'abc')], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -167,11 +168,11 @@ class RouterMiddlewareTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -196,17 +197,17 @@ class RouterMiddlewareTest extends TestCase
         $response1 = $router->match(new ServerRequest([], [], '/one', 'GET'));
         $response2 = $router->match(new ServerRequest([], [], '/two', 'GET'));
 
-        $this->assertSame(2, $count);
+        Assert::assertSame(2, $count);
 
-        $this->assertSame(200, $response1->getStatusCode());
-        $this->assertSame('abc123', $response1->getBody()->getContents());
-        $this->assertTrue($response1->hasHeader('X-Key'));
-        $this->assertSame('abc', $response1->getHeader('X-Key')[0]);
+        Assert::assertSame(200, $response1->getStatusCode());
+        Assert::assertSame('abc123', $response1->getBody()->getContents());
+        Assert::assertTrue($response1->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response1->getHeader('X-Key')[0]);
 
-        $this->assertSame(200, $response2->getStatusCode());
-        $this->assertSame('abc123', $response2->getBody()->getContents());
-        $this->assertTrue($response2->hasHeader('X-Key'));
-        $this->assertSame('abc', $response2->getHeader('X-Key')[0]);
+        Assert::assertSame(200, $response2->getStatusCode());
+        Assert::assertSame('abc123', $response2->getBody()->getContents());
+        Assert::assertTrue($response2->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response2->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -221,9 +222,9 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -240,9 +241,9 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
     /** @test */
@@ -258,9 +259,9 @@ class RouterMiddlewareTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-Key'));
-        $this->assertSame('abc', $response->getHeader('X-Key')[0]);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-Key'));
+        Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
     private function createMockMiddlewareResolverWithHeader($header, $value)

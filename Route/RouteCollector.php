@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -39,20 +40,20 @@ use const PREG_SET_ORDER;
 class RouteCollector implements Collector
 {
     /** @var array Array of all routes (incl. named routes). */
-    protected $routes = [];
+    protected array $routes = [];
     /** @var array Array of all named routes. */
-    protected $namedRoutes = [];
+    protected array $namedRoutes = [];
     /** @var string domain */
-    protected $domain;
+    protected string $domain;
     /** @var string subdomain */
-    protected $subdomain;
+    protected string $subdomain;
     /**
      * @var string Can be used to ignore leading part of the Request
      * URL (if main file lives in subdirectory of host)
      */
-    protected $basePath = '';
+    protected string $basePath = '';
     /** @var array Array of default match types (regex helpers) */
-    protected $matchTypes = [
+    protected array $matchTypes = [
         'i'  => '[0-9]++',
         'a'  => '[0-9A-Za-z]++',
         'h'  => '[0-9A-Fa-f]++',
@@ -98,11 +99,11 @@ class RouteCollector implements Collector
      */
     public function addRoutes(array $routes): void
     {
-        if (! is_array($routes) && ! $routes instanceof Traversable) {
-            throw new RuntimeException('Routes should be an array or an instance of Traversable');
+        if (! is_array(value: $routes) && ! $routes instanceof Traversable) {
+            throw new RuntimeException(message: 'Routes should be an array or an instance of Traversable');
         }
         foreach ($routes as $route) {
-            call_user_func_array([$this, 'map'], $route);
+            call_user_func_array(callback: [$this, 'map'], args: $route);
         }
     }
 
@@ -141,6 +142,7 @@ class RouteCollector implements Collector
      *
      * @param string      $method One of 5 HTTP Methods, or a pipe-separated list
      *                            of multiple HTTP Methods (GET|POST|PATCH|PUT|DELETE)
+     * @param ?string     $subdomain Domain of route.
      * @param string      $route The route regex, custom regex must start with an @.
      *                            You can use multiple pre-set regex filters, like [i:id]
      * @param mixed       $target The target where this route should point to. Can be anything.
@@ -148,14 +150,14 @@ class RouteCollector implements Collector
      *                     reverse route this url in your application.
      * @throws RuntimeException
      */
-    public function map(string $method, ?string $subdomain, string $route, $target, ?string $name = null)
+    public function map(string $method, ?string $subdomain, string $route, mixed $target, ?string $name = null)
     {
         $this->subdomain = $subdomain;
 
         $this->routes[] = [$method, $subdomain, $route, $target, $name];
         if ($name) {
             if (isset($this->namedRoutes[$name])) {
-                throw new RuntimeException("Can not redeclare route '{$name}'");
+                throw new RuntimeException(message: "Can not redeclare route '{$name}'");
             }
             $this->namedRoutes[$name] = $route;
         }
@@ -172,7 +174,7 @@ class RouteCollector implements Collector
      * @return string The URL of the route with named parameters in place.
      * @throws NamedRouteNotFoundException
      */
-    public function generateUri(string $routeName, array $params = [])
+    public function generateUri(string $routeName, array $params = []): string
     {
         if (null !== $this->domain) {
             $domain = $this->domain;
@@ -183,7 +185,7 @@ class RouteCollector implements Collector
         }
         // Check if named route exists
         if (! isset($this->namedRoutes[$routeName])) {
-            throw new NamedRouteNotFoundException("Route '{$routeName}' does not exist.");
+            throw new NamedRouteNotFoundException(message: "Route '{$routeName}' does not exist.");
         }
         // Replace named parameters
         $route = $this->namedRoutes[$routeName];
@@ -201,18 +203,18 @@ class RouteCollector implements Collector
                 [$block, $pre, $type, $param, $optional] = $match;
 
                 if ($pre) {
-                    $block = substr($block, 1);
+                    $block = substr(string: $block, offset: 1);
                 }
 
                 if (isset($params[$param])) {
                     // Part is found, replace for param value
-                    $url = str_replace($block, $params[$param], $url);
+                    $url = str_replace(search: $block, replace: $params[$param], subject: $url);
                 } elseif ($optional && $index !== 0) {
                     // Only strip preceding slash if it's not at the base
-                    $url = str_replace($pre . $block, '', $url);
+                    $url = str_replace(search: $pre . $block, replace: '', subject: $url);
                 } else {
                     // Strip match block
-                    $url = str_replace($block, '', $url);
+                    $url = str_replace(search: $block, replace: '', subject: $url);
                 }
             }
         }
@@ -223,8 +225,9 @@ class RouteCollector implements Collector
      * Match a given Request Url against stored routes
      *
      * @return array|bool Array with route information on success, false on failure (no match).
+     * @throws Exception
      */
-    public function match(?string $requestHost = null, ?string $requestUrl = null, ?string $requestMethod = null)
+    public function match(?string $requestHost = null, ?string $requestUrl = null, ?string $requestMethod = null): array|bool
     {
         $params = [];
         /**
@@ -232,7 +235,7 @@ class RouteCollector implements Collector
          */
         if (null !== $this->domain && null === $requestHost) {
             if (! isset($_SERVER['HTTP_HOST'])) {
-                throw new Exception("Subdomain matching active but no host is specified.");
+                throw new Exception(message: 'Subdomain matching active but no host is specified.');
             }
             $requestHost = $_SERVER['HTTP_HOST'];
         }
@@ -246,15 +249,15 @@ class RouteCollector implements Collector
         /**
          * Strip base path from request url.
          */
-        $requestUrl = substr($requestUrl, strlen($this->basePath));
+        $requestUrl = substr(string: $requestUrl, offset: strlen(string: $this->basePath));
         /**
          * Strip query string (?a=b) from Request Url.
          */
-        if (($strpos = strpos($requestUrl, '?')) !== false) {
-            $requestUrl = substr($requestUrl, 0, $strpos);
+        if (($strpos = strpos(haystack: $requestUrl, needle: '?')) !== false) {
+            $requestUrl = substr(string: $requestUrl, offset: 0, length: $strpos);
         }
 
-        $lastRequestUrlChar = $requestUrl ? $requestUrl[strlen($requestUrl) - 1] : '';
+        $lastRequestUrlChar = $requestUrl ? $requestUrl[strlen(string: $requestUrl) - 1] : '';
         /**
          * Set Request Method if it isn't passed as a parameter
          */
@@ -270,7 +273,7 @@ class RouteCollector implements Collector
                 continue;
             }
 
-            $method_match = stripos($methods, $requestMethod) !== false;
+            $method_match = stripos(haystack: $methods, needle: $requestMethod) !== false;
             /**
              * Method did not match, continue to next route.
              */
@@ -290,13 +293,13 @@ class RouteCollector implements Collector
                  *
                  * @var string
                  */
-                $pattern = '`' . substr($route, 1) . '`u';
+                $pattern = '`' . substr(string: $route, offset: 1) . '`u';
                 $match   = preg_match($pattern, $requestUrl, $params) === 1;
-            } elseif (($position = strpos($route, '[')) === false) {
+            } elseif (($position = strpos(haystack: $route, needle: '[')) === false) {
                 /**
                  * No params in url, do string comparison.
                  */
-                $match = strcmp($requestUrl, $route) === 0;
+                $match = strcmp(string1: $requestUrl, string2: $route) === 0;
             } else {
                 /**
                  * Compare longest non-param string with url before moving on to
@@ -306,18 +309,18 @@ class RouteCollector implements Collector
                  * could be optional if param is optional too
                  * (see https://github.com/dannyvankooten/AltoRouter/issues/241).
                  */
-                if (strncmp($requestUrl, $route, $position) !== 0 && ($lastRequestUrlChar === '/' || $route[$position - 1] !== '/')) {
+                if (strncmp(string1: $requestUrl, string2: $route, length: $position) !== 0 && ($lastRequestUrlChar === '/' || $route[$position - 1] !== '/')) {
                     continue;
                 }
 
-                $regex = $this->compileRoute($route);
+                $regex = $this->compileRoute(route: $route);
                 $match = preg_match($regex, $requestUrl, $params) === 1;
             }
 
             if ($match) {
                 if ($params) {
                     foreach ($params as $key => $value) {
-                        if (is_numeric($key)) {
+                        if (is_numeric(value: $key)) {
                             unset($params[$key]);
                         }
                     }
@@ -333,7 +336,7 @@ class RouteCollector implements Collector
         return false;
     }
 
-    public function getBasePath()
+    public function getBasePath(): string
     {
         return $this->basePath;
     }
@@ -375,16 +378,16 @@ class RouteCollector implements Collector
                  * @var string
                  */
                 $pattern = '(?:'
-                . ($pre !== '' ? $pre : null)
-                . '('
-                . ($param !== '' ? "?P<$param>" : null)
-                . $type
-                . ')'
-                . $optional
-                . ')'
-                . $optional;
+                    . ($pre !== '' ? $pre : null)
+                    . '('
+                    . ($param !== '' ? "?P<$param>" : null)
+                    . $type
+                    . ')'
+                    . $optional
+                    . ')'
+                    . $optional;
 
-                $route = str_replace($block, $pattern, $route);
+                $route = str_replace(search: $block, replace: $pattern, subject: $route);
             }
         }
         return "`^$route$`u";

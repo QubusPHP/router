@@ -6,6 +6,7 @@ namespace Qubus\Tests\Routing;
 
 use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -31,9 +32,9 @@ class RouterTest extends TestCase
         $route = $router->map([Router::HTTP_METHOD_GET], '/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['GET'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['GET'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -44,7 +45,7 @@ class RouterTest extends TestCase
         $route = $router->map(['get', 'head', 'post', 'put', 'patch', 'delete', 'options'], '/test/123', function () {
         });
 
-        $this->assertSame(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route->getMethods());
+        Assert::assertSame(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route->getMethods());
     }
 
     /** @test */
@@ -55,9 +56,9 @@ class RouterTest extends TestCase
         $route = $router->get('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['GET'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['GET'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -68,9 +69,9 @@ class RouterTest extends TestCase
         $route = $router->head('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['HEAD'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['HEAD'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -81,9 +82,9 @@ class RouterTest extends TestCase
         $route = $router->post('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['POST'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['POST'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -94,9 +95,9 @@ class RouterTest extends TestCase
         $route = $router->patch('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['PATCH'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['PATCH'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -107,9 +108,9 @@ class RouterTest extends TestCase
         $route = $router->put('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['PUT'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['PUT'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -120,9 +121,9 @@ class RouterTest extends TestCase
         $route = $router->delete('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['DELETE'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['DELETE'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -133,9 +134,9 @@ class RouterTest extends TestCase
         $route = $router->options('/test/123', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['OPTIONS'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['OPTIONS'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -146,9 +147,9 @@ class RouterTest extends TestCase
         $route = $router->map([Router::HTTP_METHOD_GET], '/test/123/', function () {
         });
 
-        $this->assertInstanceOf(Route::class, $route);
-        $this->assertSame(['GET'], $route->getMethods());
-        $this->assertSame('/test/123', $route->getUri());
+        Assert::assertInstanceOf(Route::class, $route);
+        Assert::assertSame(['GET'], $route->getMethods());
+        Assert::assertSame('/test/123', $route->getUri());
     }
 
     /** @test */
@@ -163,8 +164,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(204, $response->getStatusCode());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(204, $response->getStatusCode());
     }
 
     /** @test */
@@ -179,8 +180,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertSame(1, $count);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
     }
 
     /** @test */
@@ -197,8 +198,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertSame(1, $count);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
     }
 
     /** @test */
@@ -213,7 +214,7 @@ class RouterTest extends TestCase
         });
         $routerResponse = $router->match($request);
 
-        $this->assertSame($response, $routerResponse);
+        Assert::assertSame($response, $routerResponse);
     }
 
     /** @test */
@@ -224,8 +225,8 @@ class RouterTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertSame(404, $response->getStatusCode());
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertSame(404, $response->getStatusCode());
     }
 
     /** @test */
@@ -242,8 +243,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -260,8 +261,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -278,8 +279,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -296,8 +297,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -314,8 +315,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -327,7 +328,7 @@ class RouterTest extends TestCase
         $route    = $router->get('/test/123', 'Qubus\Tests\Routing\Controllers\TestController@returnHelloWorld');
         $response = $router->match($request);
 
-        $this->assertSame('Hello World!', $response->getBody()->getContents());
+        Assert::assertSame('Hello World!', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -369,13 +370,13 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
             $count++;
 
-            $this->assertInstanceOf(RouteParams::class, $params);
-            $this->assertSame('123', $params->postId);
-            $this->assertSame('abc', $params->commentId);
+            Assert::assertInstanceOf(RouteParams::class, $params);
+            Assert::assertSame('123', $params->postId);
+            Assert::assertSame('abc', $params->commentId);
         });
         $router->match($request);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -387,13 +388,13 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
             $count++;
 
-            $this->assertInstanceOf(RouteParams::class, $params);
-            $this->assertSame('123', $params->postId);
-            $this->assertSame('abc', $params->commentId);
+            Assert::assertInstanceOf(RouteParams::class, $params);
+            Assert::assertSame('123', $params->postId);
+            Assert::assertSame('abc', $params->commentId);
         });
         $router->match($request);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -410,7 +411,7 @@ class RouterTest extends TestCase
         $router->match($matchingRequest);
         $router->match($nonMatchingRequest);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -427,7 +428,7 @@ class RouterTest extends TestCase
         $router->match($matchingRequest);
         $router->match($nonMatchingRequest);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -444,7 +445,7 @@ class RouterTest extends TestCase
         $router->match($matchingRequest);
         $router->match($nonMatchingRequest);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -464,7 +465,7 @@ class RouterTest extends TestCase
         $router->match($matchingRequest);
         $router->match($nonMatchingRequest);
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -485,7 +486,7 @@ class RouterTest extends TestCase
         $router->match($matchingRequest2);
         $router->match($nonMatchingRequest);
 
-        $this->assertSame(2, $count);
+        Assert::assertSame(2, $count);
     }
 
     /** @test */
@@ -496,7 +497,7 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/all', function () {
         })->name('test.name');
 
-        $this->assertSame('/posts/all/', $router->url('test.name'));
+        Assert::assertSame('/posts/all/', $router->url('test.name'));
     }
 
     /** @test */
@@ -507,7 +508,7 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{id}/comments', function () {
         })->name('test.name');
 
-        $this->assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
+        Assert::assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
     }
 
     /** @test */
@@ -545,7 +546,7 @@ class RouterTest extends TestCase
         $request = new ServerRequest([], [], '/does/not/match', 'GET');
         $router->match($request, 'GET');
 
-        $this->assertSame('/posts/all/', $router->url('test.name'));
+        Assert::assertSame('/posts/all/', $router->url('test.name'));
     }
 
     /** @test */
@@ -588,7 +589,7 @@ class RouterTest extends TestCase
 
         $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -596,9 +597,9 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -610,7 +611,7 @@ class RouterTest extends TestCase
 
         $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -618,9 +619,9 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -632,7 +633,7 @@ class RouterTest extends TestCase
 
         $router->group([], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -640,9 +641,9 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -654,7 +655,7 @@ class RouterTest extends TestCase
 
         $router->group(['prefix' => '/prefix'], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -662,9 +663,9 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -676,7 +677,7 @@ class RouterTest extends TestCase
 
         $router->group(['prefix' => 'prefix/'], function ($group) use (&$count) {
             $count++;
-            $this->assertInstanceOf(RouteGroup::class, $group);
+            Assert::assertInstanceOf(RouteGroup::class, $group);
 
             $group->get('all', function () {
                 return 'abc123';
@@ -684,9 +685,9 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -704,8 +705,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -723,8 +724,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -742,8 +743,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -761,8 +762,8 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -786,9 +787,9 @@ class RouterTest extends TestCase
         $request2  = new ServerRequest([], [], '/updated-base-path/prefix/all', 'GET');
         $response2 = $router->match($request2);
 
-        $this->assertSame(2, $count);
-        $this->assertSame('abc123', $response1->getBody()->getContents());
-        $this->assertSame('abc123', $response2->getBody()->getContents());
+        Assert::assertSame(2, $count);
+        Assert::assertSame('abc123', $response1->getBody()->getContents());
+        Assert::assertSame('abc123', $response2->getBody()->getContents());
     }
 
     /** @test */
@@ -810,10 +811,10 @@ class RouterTest extends TestCase
         });
         $response = $router->match($request);
 
-        $this->assertSame(2, $count);
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertTrue($response->hasHeader('X-key'));
-        $this->assertSame('value', $response->getHeader('X-key')[0]);
+        Assert::assertSame(2, $count);
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertTrue($response->hasHeader('X-key'));
+        Assert::assertSame('value', $response->getHeader('X-key')[0]);
     }
 
     /** @test */
@@ -831,8 +832,8 @@ class RouterTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame($route, $router->currentRoute());
+        Assert::assertSame(1, $count);
+        Assert::assertSame($route, $router->currentRoute());
     }
 
     /** @test */
@@ -850,8 +851,8 @@ class RouterTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame('test123', $router->currentRouteName());
+        Assert::assertSame(1, $count);
+        Assert::assertSame('test123', $router->currentRouteName());
     }
 
     /** @test */
@@ -864,7 +865,7 @@ class RouterTest extends TestCase
             return 'abc123';
         })->name('test123');
 
-        $this->assertSame(null, $router->currentRouteName());
+        Assert::assertSame(null, $router->currentRouteName());
     }
 
     /** @test */
@@ -879,7 +880,7 @@ class RouterTest extends TestCase
 
         $response = $router->match($request);
 
-        $this->assertSame(null, $router->currentRouteName());
+        Assert::assertSame(null, $router->currentRouteName());
     }
 
     /** @test */
@@ -893,9 +894,9 @@ class RouterTest extends TestCase
 
         $routes = $router->getRoutes();
 
-        $this->assertCount(2, $routes);
-        $this->assertContains($route1, $routes);
-        $this->assertContains($route2, $routes);
+        Assert::assertCount(2, $routes);
+        Assert::assertContains($route1, $routes);
+        Assert::assertContains($route2, $routes);
     }
 
     /**
@@ -909,8 +910,8 @@ class RouterTest extends TestCase
 
         $queryBuilder = new Router(new RouteCollector());
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
-        $this->assertSame('abc123', Router::testFunctionAddedByMacro());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
+        Assert::assertSame('abc123', Router::testFunctionAddedByMacro());
     }
 
     /**
@@ -922,7 +923,7 @@ class RouterTest extends TestCase
 
         $queryBuilder = new Router(new RouteCollector());
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
     }
 }
 

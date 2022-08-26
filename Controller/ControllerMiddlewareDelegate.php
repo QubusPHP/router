@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -16,7 +17,7 @@ namespace Qubus\Routing\Controller;
 
 interface ControllerMiddlewareDelegate
 {
-    public function middleware($middleware): ControllerMiddlewareOptions;
+    public function middleware(mixed $middleware): ControllerMiddlewareOptions;
 
     public function getControllerMiddleware(): array;
 }

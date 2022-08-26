@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -19,8 +20,7 @@ interface MiddlewareResolver
     /**
      * Resolves a middleware
      *
-     * @param  mixed $name The key to lookup a middleware
-     * @return mixed
+     * @param  mixed $name The key to look up a middleware
      */
-    public function resolve($name);
+    public function resolve(mixed $name): mixed;
 }

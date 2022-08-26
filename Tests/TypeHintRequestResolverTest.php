@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Qubus\Tests\Routing;
 
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\TypeHintRequestResolver;
 use ReflectionFunction;
@@ -21,7 +22,7 @@ class TypeHintRequestResolverTest extends TestCase
 
         $params = $resolver->getParameters($reflectionFunction, [], $resolvedParameters);
 
-        $this->assertSame($resolvedParameters, $params);
+        Assert::assertSame($resolvedParameters, $params);
     }
 
     /** @test */
@@ -35,7 +36,7 @@ class TypeHintRequestResolverTest extends TestCase
 
         $params = $resolver->getParameters($reflectionFunction, [], []);
 
-        $this->assertSame('/injected', $params[0]->getUri()->getPath());
+        Assert::assertSame('/injected', $params[0]->getUri()->getPath());
     }
 
     /** @test */
@@ -51,6 +52,6 @@ class TypeHintRequestResolverTest extends TestCase
         $resolver->setRequest($injectedRequest);
         $params = $resolver->getParameters($reflectionFunction, [], $resolvedParameters);
 
-        $this->assertSame('/pre/resolved', $params[0]->getUri()->getPath());
+        Assert::assertSame('/pre/resolved', $params[0]->getUri()->getPath());
     }
 }

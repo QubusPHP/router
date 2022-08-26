@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -14,8 +15,8 @@ declare(strict_types=1);
 
 namespace Qubus\Routing\Route;
 
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Qubus\Exception\Data\TypeException;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
 use Qubus\Routing\Factories\ResponseFactory;
@@ -38,29 +39,24 @@ final class Route implements Routable
 {
     use Macroable;
 
-    protected $uri;
-    protected $methods = [];
-    protected $routeAction;
-    protected $name;
-    protected $domain;
-    protected $subDomain;
-    protected $schemes = [];
-    protected $invoker;
-    protected $middlewareResolver;
-    protected $middlewares      = [];
-    protected $paramConstraints = [];
-    protected $controllerName;
-    protected $controllerMethod;
-    protected $defaultNamespace;
-    protected $namespace;
+    protected string $uri;
+    protected array $methods = [];
+    protected RouteAction $routeAction;
+    protected ?string $name = null;
+    protected ?string $domain = null;
+    protected ?string $subDomain = null;
+    protected array $schemes = [];
+    protected ?Invoker $invoker = null;
+    protected ?MiddlewareResolver $middlewareResolver = null;
+    protected array $middlewares = [];
+    protected array $paramConstraints = [];
+    protected ?string $defaultNamespace = null;
+    protected ?string $namespace = null;
 
-    /**
-     * @param mixed $action
-     */
     public function __construct(
         array $methods,
         string $uri,
-        $action,
+        mixed $action,
         ?string $defaultNamespace = null,
         ?Invoker $invoker = null,
         ?MiddlewareResolver $middlewareResolver = null
@@ -69,31 +65,33 @@ final class Route implements Routable
         $this->invoker            = $invoker;
         $this->middlewareResolver = $middlewareResolver;
         $this->methods            = $methods;
-        $this->setUri($uri);
-        $this->setAction($action);
+        $this->setUri(uri: $uri);
+        $this->setAction(action: $action);
     }
 
     protected function setUri(string $uri)
     {
-        $this->uri = rtrim($uri, ' /');
+        $this->uri = rtrim(string: $uri, characters: ' /');
     }
 
-    protected function setAction($action)
+    protected function setAction(mixed $action): void
     {
-        $this->routeAction = new RouteAction($action, $this->getNamespace(), $this->invoker);
+        $this->routeAction = new RouteAction(
+            action: $action,
+            namespace: $this->getNamespace(),
+            invoker: $this->invoker
+        );
     }
 
     /**
      * Prepend url
-     *
-     * @return string
      */
-    public function prependUrl(string $uri)
+    public function prependUrl(string $uri): void
     {
-        return $this->setUri(rtrim($uri, '/') . $this->uri);
+        $this->setUri(uri: rtrim(string: $uri, characters: '/') . $this->uri);
     }
 
-    public function handle(RequestInterface $request, RouteParams $params): ResponseInterface
+    public function handle(ServerRequestInterface $request, RouteParams $params): ResponseInterface
     {
         /**
          * Get all the middleware registered for this route
@@ -103,20 +101,20 @@ final class Route implements Routable
          * Add our route handler as the last item.
          */
         $middlewares[] = function ($request) use ($params) {
-            $output = $this->routeAction->invoke($request, $params);
-            return ResponseFactory::create($request, $output);
+            $output = $this->routeAction->invoke(request: $request, params: $params);
+            return ResponseFactory::create(request: $request, response: $output);
         };
         /**
          * Create and process the dispatcher.
          */
-        $dispatcher = new Relay($middlewares, function ($name) {
+        $dispatcher = new Relay(queue: $middlewares, resolver: function ($name) {
             if (! isset($this->middlewareResolver)) {
                 return $name;
             }
-            return $this->middlewareResolver->resolve($name);
+            return $this->middlewareResolver->resolve(name: $name);
         });
 
-        return $dispatcher->handle($request);
+        return $dispatcher->handle(request: $request);
     }
 
     public function gatherMiddlewares(): array
@@ -134,10 +132,13 @@ final class Route implements Routable
         return $this->methods;
     }
 
+    /**
+     * @throws RouteNameRedefinedException
+     */
     public function name(?string $name): Routable
     {
         if (isset($this->name)) {
-            throw new RouteNameRedefinedException();
+            throw new RouteNameRedefinedException(message: 'Route name is already defined.');
         }
         $this->name = $name;
         return $this;
@@ -153,10 +154,10 @@ final class Route implements Routable
             [, $scheme, $domain] = $matches;
 
             if (! empty($scheme)) {
-                $this->setScheme($scheme);
+                $this->setScheme(schemes: $scheme);
             }
         }
-        $this->domain = trim($domain, '//');
+        $this->domain = trim(string: $domain, characters: '//');
         return $this;
     }
 
@@ -170,10 +171,10 @@ final class Route implements Routable
             [, $scheme, $subdomain] = $matches;
 
             if (! empty($scheme)) {
-                $this->setScheme($scheme);
+                $this->setScheme(schemes: $scheme);
             }
         }
-        $this->subDomain = trim($subdomain, '//');
+        $this->subDomain = trim(string: $subdomain, characters: '//');
         return $this;
     }
 
@@ -196,13 +197,16 @@ final class Route implements Routable
         return $this;
     }
 
+    /**
+     * @throws TypeException
+     */
     public function where(): self
     {
         $args = func_get_args();
         if (count($args) === 0) {
             throw new TypeException();
         }
-        if (is_array($args[0])) {
+        if (is_array(value: $args[0])) {
             foreach ($args[0] as $key => $value) {
                 $this->paramConstraints[$key] = $value;
             }
@@ -221,7 +225,7 @@ final class Route implements Routable
     {
         $args = func_get_args();
         foreach ($args as $middleware) {
-            if (is_array($middleware)) {
+            if (is_array(value: $middleware)) {
                 $this->middlewares += $middleware;
             } else {
                 $this->middlewares[] = $middleware;
@@ -237,12 +241,12 @@ final class Route implements Routable
 
     public function getDomain(): ?string
     {
-        return str_replace(['http://', 'https://'], '', (string) $this->domain);
+        return str_replace(search: ['http://', 'https://'], replace: '', subject: (string) $this->domain);
     }
 
     public function getSubDomain(): ?string
     {
-        return str_replace(['http://', 'https://'], '', (string) $this->subDomain);
+        return str_replace(search: ['http://', 'https://'], replace: '', subject: (string) $this->subDomain);
     }
 
     public function getNamespace(): ?string

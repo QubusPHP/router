@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -155,7 +156,7 @@ class RoutingEventHandler implements EventHandler
 
         /** @var Closure $event */
         foreach ($events as $event) {
-            $event(new RoutingEventArgument($name, $router, $eventArgs));
+            $event(new RoutingEventArgument(eventName: $name, router: $router, arguments: $eventArgs));
         }
     }
 }
