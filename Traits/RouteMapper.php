@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -14,23 +15,22 @@ declare(strict_types=1);
 
 namespace Qubus\Routing\Traits;
 
+use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Interfaces\Routable;
 
 trait RouteMapper
 {
     /**
      * Add a route to the map.
-     *
-     * @param callable|string $callback
      */
-    abstract public function map(array $verbs, string $uri, $callback): Routable;
+    abstract public function map(array $verbs, string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to any HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function any(string $uri, $callback): Routable
+    public function any(string $uri, callable|string $callback): Routable
     {
         return $this->map(
             [
@@ -52,9 +52,9 @@ trait RouteMapper
     /**
      * Add a route that responds to GET HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function get(string $uri, $callback): Routable
+    public function get(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_GET], $uri, $callback);
     }
@@ -62,9 +62,9 @@ trait RouteMapper
     /**
      * Add a route that responds to POST HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function post(string $uri, $callback): Routable
+    public function post(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_POST], $uri, $callback);
     }
@@ -72,9 +72,9 @@ trait RouteMapper
     /**
      * Add a route that responds to PATCH HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function patch(string $uri, $callback): Routable
+    public function patch(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_PATCH], $uri, $callback);
     }
@@ -82,9 +82,9 @@ trait RouteMapper
     /**
      * Add a route that responds to PUT HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function put(string $uri, $callback): Routable
+    public function put(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_PUT], $uri, $callback);
     }
@@ -92,9 +92,9 @@ trait RouteMapper
     /**
      * Add a route that responds to DELETE HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function delete(string $uri, $callback): Routable
+    public function delete(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_DELETE], $uri, $callback);
     }
@@ -102,9 +102,9 @@ trait RouteMapper
     /**
      * Add a route that responds to HEAD HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function head(string $uri, $callback): Routable
+    public function head(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_HEAD], $uri, $callback);
     }
@@ -112,9 +112,9 @@ trait RouteMapper
     /**
      * Add a route that responds to OPTIONS HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function options(string $uri, $callback): Routable
+    public function options(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_OPTIONS], $uri, $callback);
     }
@@ -122,9 +122,9 @@ trait RouteMapper
     /**
      * Add a route that responds to CONNECT HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function connect(string $uri, $callback): Routable
+    public function connect(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_CONNECT], $uri, $callback);
     }
@@ -132,9 +132,9 @@ trait RouteMapper
     /**
      * Add a route that responds to TRACE HTTP method.
      *
-     * @param callable|string $callback
+     * @throws TooLateToAddNewRouteException
      */
-    public function trace(string $uri, $callback): Routable
+    public function trace(string $uri, callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_TRACE], $uri, $callback);
     }

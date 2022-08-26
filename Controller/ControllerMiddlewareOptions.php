@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/routing
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -28,10 +29,9 @@ final class ControllerMiddlewareOptions
     /**
      * Specify the methods that the middleware applies to
      *
-     * @param string|array $method
      * @return $this
      */
-    public function only($method): self
+    public function only(array|string $method): self
     {
         if (! is_array($method)) {
             $method = [$method];
@@ -45,10 +45,9 @@ final class ControllerMiddlewareOptions
     /**
      * Specify the methods that the middleware does not apply to.
      *
-     * @param string|array $method
      * @return $this
      */
-    public function except($method): self
+    public function except(array|string $method): self
     {
         if (! is_array($method)) {
             $method = [$method];
@@ -61,10 +60,8 @@ final class ControllerMiddlewareOptions
 
     /**
      * Is a specific method excluded by the options set on this object.
-     *
-     * @param string $method
      */
-    public function excludedForMethod($method): bool
+    public function excludedForMethod(string $method): bool
     {
         if (empty($this->only) && empty($this->except)) {
             return false;

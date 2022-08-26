@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing\Controllers;
 
-use Qubus\Routing\Controller\BaseController;
+use Qubus\Routing\Controller\Controller;
 
-class MiddlewareProvidingController extends BaseController
+class MiddlewareProvidingController extends Controller
 {
     public function returnOne()
     {

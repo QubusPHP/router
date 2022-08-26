@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Exception\Data\TypeException;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
@@ -18,10 +19,10 @@ class RouteTest extends TestCase
     {
         $router = new Router(new RouteCollector());
 
-        $this->assertFalse($router->has('test'));
+        Assert::assertFalse($router->has('test'));
         $route = $router->get('test/123', function () {
         })->name('test');
-        $this->assertTrue($router->has('test'));
+        Assert::assertTrue($router->has('test'));
     }
 
     /** @test */
@@ -29,7 +30,7 @@ class RouteTest extends TestCase
     {
         $router = new Router(new RouteCollector());
 
-        $this->assertInstanceOf(Route::class, $router->get('test/123', function () {
+        Assert::assertInstanceOf(Route::class, $router->get('test/123', function () {
         })->name('test'));
     }
 
@@ -49,7 +50,7 @@ class RouteTest extends TestCase
     {
         $router = new Router(new RouteCollector());
 
-        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {
+        Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where('id', '[0-9]+'));
     }
 
@@ -58,7 +59,7 @@ class RouteTest extends TestCase
     {
         $router = new Router(new RouteCollector());
 
-        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {
+        Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where(['id' => '[0-9]+']));
     }
 
@@ -69,7 +70,7 @@ class RouteTest extends TestCase
 
         $router = new Router(new RouteCollector());
 
-        $this->assertInstanceOf(Route::class, $router->get('test/{id}', function () {
+        Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where());
     }
 
@@ -80,7 +81,7 @@ class RouteTest extends TestCase
         $route  = $router->get('test/123', function () {
         });
 
-        $this->assertSame('Closure', $route->getActionName());
+        Assert::assertSame('Closure', $route->getActionName());
     }
 
     /** @test */
@@ -89,7 +90,7 @@ class RouteTest extends TestCase
         $router = new Router(new RouteCollector());
         $route  = $router->get('test/123', [TestCallableController::class, 'testStatic']);
 
-        $this->assertSame(TestCallableController::class . '@testStatic', $route->getActionName());
+        Assert::assertSame(TestCallableController::class . '@testStatic', $route->getActionName());
     }
 
     /** @test */
@@ -99,7 +100,7 @@ class RouteTest extends TestCase
         $controller = new TestCallableController();
         $route      = $router->get('test/123', [$controller, 'test']);
 
-        $this->assertSame(TestCallableController::class . '@test', $route->getActionName());
+        Assert::assertSame(TestCallableController::class . '@test', $route->getActionName());
     }
 
     /** @test */
@@ -108,7 +109,7 @@ class RouteTest extends TestCase
         $router = new Router(new RouteCollector());
         $route  = $router->get('test/123', TestCallableController::class . '@test');
 
-        $this->assertSame(TestCallableController::class . '@test', $route->getActionName());
+        Assert::assertSame(TestCallableController::class . '@test', $route->getActionName());
     }
 
     /**
@@ -123,8 +124,8 @@ class RouteTest extends TestCase
         $queryBuilder = new Route(['GET'], '/test/url', function () {
         });
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
-        $this->assertSame('abc123', Route::testFunctionAddedByMacro());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
+        Assert::assertSame('abc123', Route::testFunctionAddedByMacro());
     }
 
     /**
@@ -137,7 +138,7 @@ class RouteTest extends TestCase
         $queryBuilder = new Route(['GET'], '/test/url', function () {
         });
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
     }
 }
 

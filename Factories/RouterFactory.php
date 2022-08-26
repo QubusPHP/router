@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -17,30 +18,26 @@ namespace Qubus\Routing\Factories;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Qubus\Routing\Interfaces\Collector;
-use Qubus\Routing\Interfaces\Mappable;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
+use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
 
 final class RouterFactory implements RouterableFactory
 {
-    /** @var RouteCollector $routeCollector */
-    protected static $routeCollector;
+    protected static RouteCollector $routeCollector;
 
-    /** @var ContainerInterface $container */
-    protected static $container;
+    protected static ?ContainerInterface $container = null;
 
-    /** @var ResponseFactoryInterface $responseFactory */
-    protected static $responseFactory;
+    protected static ?ResponseFactoryInterface $responseFactory = null;
 
-    /** @var MiddlewareResolver $middlewareResolver */
-    protected static $middlewareResolver;
+    protected static ?MiddlewareResolver $middlewareResolver = null;
 
     public static function create(
         Collector $routeCollector,
         ?ContainerInterface $container = null,
         ?ResponseFactoryInterface $responseFactory = null,
         ?MiddlewareResolver $middlewareResolver = null
-    ): Mappable {
+    ): Router {
         return new Router(
             $routeCollector ?? static::$routeCollector,
             $container ?? static::$container,

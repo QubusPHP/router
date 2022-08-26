@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\Controller\ControllerMiddlewareOptions;
 use Qubus\Routing\Controller\ControllerMiddlewarePipe;
@@ -19,7 +20,7 @@ class ControllerMiddlewareTest extends TestCase
 
         $controllerMiddleware = new ControllerMiddlewarePipe($middleware, $options);
 
-        $this->assertSame($middleware, $controllerMiddleware->middleware());
+        Assert::assertSame($middleware, $controllerMiddleware->middleware());
     }
 
     /** @test */
@@ -30,6 +31,6 @@ class ControllerMiddlewareTest extends TestCase
 
         $controllerMiddleware = new ControllerMiddlewarePipe($middleware, $options);
 
-        $this->assertSame($options, $controllerMiddleware->options());
+        Assert::assertSame($options, $controllerMiddleware->options());
     }
 }

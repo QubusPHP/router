@@ -9,6 +9,7 @@ use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Diactoros\ServerRequest;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -19,7 +20,7 @@ class ResponseFactoryTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -31,7 +32,7 @@ class ResponseFactoryTest extends TestCase
     {
         $response = new TextResponse('Testing', 200);
 
-        $this->assertSame($response, ResponseFactory::create($this->request, $response));
+        Assert::assertSame($response, ResponseFactory::create($this->request, $response));
     }
 
     /** @test */
@@ -39,8 +40,8 @@ class ResponseFactoryTest extends TestCase
     {
         $response = ResponseFactory::create($this->request, 'Testing');
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertSame('Testing', $response->getBody()->getContents());
+        Assert::assertInstanceOf(ResponseInterface::class, $response);
+        Assert::assertSame('Testing', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -48,7 +49,7 @@ class ResponseFactoryTest extends TestCase
     {
         $response = ResponseFactory::create($this->request, '');
 
-        $this->assertInstanceOf(EmptyResponse::class, $response);
+        Assert::assertInstanceOf(EmptyResponse::class, $response);
     }
 
     /** @test */
@@ -60,8 +61,8 @@ class ResponseFactoryTest extends TestCase
 
         $response = ResponseFactory::create($this->request, $object);
 
-        $this->assertInstanceOf(TextResponse::class, $response);
-        $this->assertSame('testing123', $response->getBody()->getContents());
+        Assert::assertInstanceOf(TextResponse::class, $response);
+        Assert::assertSame('testing123', $response->getBody()->getContents());
     }
 }
 

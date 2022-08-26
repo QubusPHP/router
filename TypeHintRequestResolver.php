@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -15,22 +16,25 @@ declare(strict_types=1);
 namespace Qubus\Routing;
 
 use Invoker\ParameterResolver\ParameterResolver;
-use Laminas\Diactoros\ServerRequest;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionFunctionAbstract;
 
 use function array_diff_key;
 
 final class TypeHintRequestResolver implements ParameterResolver
 {
-    protected $request;
+    protected ServerRequestInterface $request;
 
+    /**
+     * @throws ReflectionException
+     */
     public function getParameters(
         ReflectionFunctionAbstract $reflection,
         array $providedParameters,
         array $resolvedParameters
-    ) {
+    ): array {
         if (! isset($this->request)) {
             return $resolvedParameters;
         }
@@ -44,20 +48,25 @@ final class TypeHintRequestResolver implements ParameterResolver
         }
 
         foreach ($parameters as $index => $parameter) {
-            $parameterClass = $parameter->getClass();
+            $parameterClass = $parameter->getType() && ! $parameter->getType()->isBuiltin()
+            ? new ReflectionClass(objectOrClass: $parameter->getType()->getName())
+            : null;
 
             if (! $parameterClass) {
                 continue;
             }
 
-            if ($parameterClass->implementsInterface(ServerRequestInterface::class)) {
-                $resolvedParameters[$index] = $this->createRequestOfType($parameterClass);
+            if ($parameterClass->implementsInterface(interface: ServerRequestInterface::class)) {
+                $resolvedParameters[$index] = $this->createRequestOfType(requestClass: $parameterClass);
             }
         }
         return $resolvedParameters;
     }
 
-    protected function createRequestOfType(ReflectionClass $requestClass)
+    /**
+     * @throws ReflectionException
+     */
+    protected function createRequestOfType(ReflectionClass $requestClass): mixed
     {
         return $requestClass->newInstance(
             $this->request->getServerParams(),
@@ -73,7 +82,7 @@ final class TypeHintRequestResolver implements ParameterResolver
         );
     }
 
-    public function setRequest(ServerRequest $request)
+    public function setRequest(ServerRequestInterface $request)
     {
         $this->request = $request;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
@@ -17,7 +18,7 @@ class RouteGroupTest extends TestCase
     {
         $router = new Router(new RouteCollector());
 
-        $this->assertInstanceOf(Router::class, $router->group('test/123', function () {
+        Assert::assertInstanceOf(Router::class, $router->group('test/123', function () {
         }));
     }
 
@@ -32,12 +33,12 @@ class RouteGroupTest extends TestCase
             $route = $group->get('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['GET'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['GET'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -51,12 +52,12 @@ class RouteGroupTest extends TestCase
             $route = $group->get('/all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['GET'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['GET'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -70,12 +71,12 @@ class RouteGroupTest extends TestCase
             $route = $group->head('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['HEAD'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['HEAD'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -89,12 +90,12 @@ class RouteGroupTest extends TestCase
             $route = $group->post('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['POST'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['POST'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -108,12 +109,12 @@ class RouteGroupTest extends TestCase
             $route = $group->put('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['PUT'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['PUT'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -127,12 +128,12 @@ class RouteGroupTest extends TestCase
             $route = $group->patch('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['PATCH'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['PATCH'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -146,12 +147,12 @@ class RouteGroupTest extends TestCase
             $route = $group->delete('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['DELETE'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['DELETE'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /** @test */
@@ -165,12 +166,12 @@ class RouteGroupTest extends TestCase
             $route = $group->options('all', function () {
             });
 
-            $this->assertInstanceOf(Route::class, $route);
-            $this->assertSame(['OPTIONS'], $route->getMethods());
-            $this->assertSame('test/all', $route->getUri());
+            Assert::assertInstanceOf(Route::class, $route);
+            Assert::assertSame(['OPTIONS'], $route->getMethods());
+            Assert::assertSame('test/all', $route->getUri());
         });
 
-        $this->assertSame(1, $count);
+        Assert::assertSame(1, $count);
     }
 
     /**
@@ -184,8 +185,8 @@ class RouteGroupTest extends TestCase
 
         $queryBuilder = new RouteGroup([], new Router(new RouteCollector()));
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
-        $this->assertSame('abc123', RouteGroup::testFunctionAddedByMacro());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
+        Assert::assertSame('abc123', RouteGroup::testFunctionAddedByMacro());
     }
 
     /**
@@ -197,7 +198,7 @@ class RouteGroupTest extends TestCase
 
         $queryBuilder = new RouteGroup([], new Router(new RouteCollector()));
 
-        $this->assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
+        Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
     }
 }
 

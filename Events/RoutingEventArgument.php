@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -24,20 +25,15 @@ class RoutingEventArgument implements EventArgument
 {
     /**
      * Event name
-     *
-     * @var string $eventName
      */
-    protected $eventName;
+    protected string $eventName;
 
     protected Router $router;
 
     /** @var array $arguments */
     protected array $arguments = [];
 
-    /**
-     * @param string $eventName
-     */
-    public function __construct($eventName, Router $router, array $arguments = [])
+    public function __construct(string $eventName, Router $router, array $arguments = [])
     {
         $this->eventName = $eventName;
         $this->router    = $router;
@@ -76,30 +72,20 @@ class RoutingEventArgument implements EventArgument
         return $this->getRouter()->getRequest();
     }
 
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         return $this->arguments[$name] ?? null;
     }
 
-    /**
-     * @param string $name
-     * @return bool
-     */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         return array_key_exists($name, $this->arguments);
     }
 
     /**
-     * @param string $name
-     * @param mixed  $value
      * @throws TypeException
      */
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value)
     {
         throw new TypeException('Not supported');
     }

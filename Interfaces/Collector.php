@@ -4,15 +4,18 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
 declare(strict_types=1);
 
 namespace Qubus\Routing\Interfaces;
+
+use RuntimeException;
 
 interface Collector
 {
@@ -58,7 +61,7 @@ interface Collector
      *                     reverse route this url in your application.
      * @throws RuntimeException
      */
-    public function map(string $method, string $domain, string $route, $target, ?string $name = null);
+    public function map(string $method, string $domain, string $route, mixed $target, ?string $name = null);
 
     /**
      * Reversed routing
@@ -70,14 +73,18 @@ interface Collector
      * @return string The URL of the route with named parameters in place.
      * @throws RuntimeException
      */
-    public function generateUri(string $routeName, array $params = []);
+    public function generateUri(string $routeName, array $params = []): string;
 
     /**
      * Match a given Request Url against stored routes
      *
      * @return array|bool Array with route information on success, false on failure (no match).
      */
-    public function match(?string $requestHost = null, ?string $requestUrl = null, ?string $requestMethod = null);
+    public function match(
+        ?string $requestHost = null,
+        ?string $requestUrl = null,
+        ?string $requestMethod = null
+    ): bool|array;
 
     /**
      *  Adds a path at the beginning of a url.

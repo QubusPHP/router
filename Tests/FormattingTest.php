@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Qubus\Routing\Formatting;
 
@@ -14,7 +15,7 @@ class FormattingTest extends TestCase
     {
         $string = 'string/';
 
-        $this->assertSame('string', Formatting::removeTrailingSlash($string));
+        Assert::assertSame('string', Formatting::removeTrailingSlash($string));
     }
 
     /** @test */
@@ -22,7 +23,7 @@ class FormattingTest extends TestCase
     {
         $string = 'string';
 
-        $this->assertSame('string/', Formatting::addTrailingSlash($string));
+        Assert::assertSame('string/', Formatting::addTrailingSlash($string));
     }
 
     /** @test */
@@ -30,7 +31,7 @@ class FormattingTest extends TestCase
     {
         $string = 'string/';
 
-        $this->assertSame('string/', Formatting::addTrailingSlash($string));
+        Assert::assertSame('string/', Formatting::addTrailingSlash($string));
     }
 
     /** @test */
@@ -38,7 +39,7 @@ class FormattingTest extends TestCase
     {
         $string = '/string';
 
-        $this->assertSame('string', Formatting::removeLeadingSlash($string));
+        Assert::assertSame('string', Formatting::removeLeadingSlash($string));
     }
 
     /** @test */
@@ -46,7 +47,7 @@ class FormattingTest extends TestCase
     {
         $string = 'string';
 
-        $this->assertSame('/string', Formatting::addLeadingSlash($string));
+        Assert::assertSame('/string', Formatting::addLeadingSlash($string));
     }
 
     /** @test */
@@ -54,6 +55,6 @@ class FormattingTest extends TestCase
     {
         $string = '/string';
 
-        $this->assertSame('/string', Formatting::addLeadingSlash($string));
+        Assert::assertSame('/string', Formatting::addLeadingSlash($string));
     }
 }

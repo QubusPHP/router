@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -19,23 +20,23 @@ use function rtrim;
 
 final class Formatting
 {
-    public static function removeTrailingSlash($input)
+    public static function removeTrailingSlash(string $input): string
     {
-        return rtrim($input, '/\\');
+        return rtrim(string: $input, characters: '/\\');
     }
 
-    public static function addTrailingSlash($input)
+    public static function addTrailingSlash(string $input): string
     {
-        return static::removeTrailingSlash($input) . '/';
+        return self::removeTrailingSlash(input: $input) . '/';
     }
 
-    public static function removeLeadingSlash($input)
+    public static function removeLeadingSlash(string $input): string
     {
-        return ltrim($input, '/\\');
+        return ltrim(string: $input, characters: '/\\');
     }
 
-    public static function addLeadingSlash($input)
+    public static function addLeadingSlash(string $input): string
     {
-        return '/' . static::removeLeadingSlash($input);
+        return '/' . self::removeLeadingSlash(input: $input);
     }
 }

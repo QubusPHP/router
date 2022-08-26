@@ -4,9 +4,10 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
@@ -15,9 +16,11 @@ declare(strict_types=1);
 namespace Qubus\Routing;
 
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Qubus\Exception\Data\TypeException;
 use Qubus\Exception\Exception;
 use Qubus\Http\Factories\JsonResponseFactory;
 use Qubus\Http\Request;
@@ -65,7 +68,7 @@ final class Router implements Mappable
 
     protected Request $request;
 
-    public string $version = '1.1.1';
+    public string $version = '2.0.0';
 
     /** @var array $routes */
     protected array $routes = [];
@@ -108,7 +111,7 @@ final class Router implements Mappable
         ?MiddlewareResolver $resolver = null
     ) {
         if (isset($container)) {
-            $this->setContainer($container);
+            $this->setContainer(container: $container);
         }
         if (isset($responseFactory)) {
             $this->responseFactory = $responseFactory;
@@ -122,12 +125,12 @@ final class Router implements Mappable
          * Set route collector instance.
          */
         $this->routeCollector = $routeCollector;
-        $this->setBasePath('/');
+        $this->setBasePath(basePath: '/');
     }
 
-    public function prependUrl(string $url): string
+    public function prependUrl(string $url): void
     {
-        return $this->routeCollector->setBasePath($url);
+        $this->routeCollector->setBasePath(basePath: $url);
     }
 
     /**
@@ -140,7 +143,7 @@ final class Router implements Mappable
          * Create an invoker for this container. This allows us to use the
          * call()` method even if the container doesn't support it natively.
          */
-        $this->invoker = new Invoker($this->container);
+        $this->invoker = new Invoker(container: $this->container);
     }
 
     /**
@@ -148,11 +151,11 @@ final class Router implements Mappable
      */
     public function setBasePath(string $basePath): void
     {
-        $this->basePath = Formatting::addLeadingSlash(Formatting::addTrailingSlash($basePath));
+        $this->basePath = Formatting::addLeadingSlash(input: Formatting::addTrailingSlash(input: $basePath));
         /**
          * Force the router to rebuild next time we need it.
          *
-         * @var boolean
+         * @var bool
          */
         $this->routesCreated = false;
     }
@@ -172,14 +175,14 @@ final class Router implements Mappable
      * @return void Add route to routes array.
      * @throws TooLateToAddNewRouteException
      */
-    protected function addRoute(Routable $route)
+    protected function addRoute(Routable $route): void
     {
-        $this->fireEvents(RoutingEventHandler::EVENT_ADD_ROUTE, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_ADD_ROUTE, arguments: [
             'route' => $route,
         ]);
 
         if ($this->routesCreated) {
-            throw new TooLateToAddNewRouteException();
+            throw new TooLateToAddNewRouteException(message: 'Routes already created.');
         }
         $this->routes[] = $route;
     }
@@ -198,15 +201,15 @@ final class Router implements Mappable
             $match    = $matches[0][$i];
             $paramKey = $matches[1][$i];
 
-            $optional = substr($paramKey, -1) === '?';
-            $paramKey = trim($paramKey, '?');
+            $optional = substr(string: $paramKey, offset: -1) === '?';
+            $paramKey = trim(string: $paramKey, characters: '?');
 
             $regex       = $paramConstraints[$paramKey] ?? null;
             $matchTypeId = '';
 
             if (! empty($regex)) {
                 $matchTypeId = 'rare' . $this->routeCollectorMatchTypeId++;
-                $routeCollector->addMatchTypes([
+                $routeCollector->addMatchTypes(matchTypes: [
                     $matchTypeId => $regex,
                 ]);
             }
@@ -217,34 +220,34 @@ final class Router implements Mappable
                 $replacement .= '?';
             }
 
-            $output = str_replace($match, $replacement, $output);
+            $output = str_replace(search: $match, replace: $replacement, subject: $output);
         }
 
-        return ltrim($output, ' /');
+        return ltrim(string: $output, characters: ' /');
     }
 
     /**
-     * @param  array    $verbs    HTTP methods.
-     * @param  string   $uri      Route path.
-     * @param  callable $callback
+     * @param array $verbs HTTP methods.
+     * @param string $uri Route path.
      * @return Route
+     * @throws TooLateToAddNewRouteException
      */
-    public function map(array $verbs, string $uri, $callback): Routable
+    public function map(array $verbs, string $uri, callable|string $callback): Routable
     {
         /**
          * Force all verbs to be uppercase.
          */
-        $verbs = array_map('strtoupper', $verbs);
+        $verbs = array_map(callback: 'strtoupper', array: $verbs);
 
         $route = new Route(
-            $verbs,
-            $uri,
-            $callback,
-            $this->defaultNamespace,
-            $this->invoker,
-            $this->middlewareResolver
+            methods: $verbs,
+            uri: $uri,
+            action: $callback,
+            defaultNamespace: $this->defaultNamespace,
+            invoker: $this->invoker,
+            middlewareResolver: $this->middlewareResolver
         );
-        $this->addRoute($route);
+        $this->addRoute(route: $route);
         return $route;
     }
 
@@ -254,20 +257,17 @@ final class Router implements Mappable
     public function resources(array $resources, array $options = []): void
     {
         foreach ($resources as $name => $controller) {
-            $this->resource($name, $controller, $options);
+            $this->resource(name: $name, controller: $controller, options: $options);
         }
     }
 
     /**
      * Route a resource to a controller.
-     *
-     * @param  string $name
-     * @param  string $controller
      */
-    public function resource($name, $controller, array $options = []): Routable
+    public function resource(string $name, string $controller, array $options = []): mixed
     {
-        $resource = new RouteResource($this);
-        return $resource->register($name, $controller, $options);
+        $resource = new RouteResource(router: $this);
+        return $resource->register(name: $name, controller: $controller, options: $options);
     }
 
     /**
@@ -276,7 +276,7 @@ final class Router implements Mappable
     public function apiResources(array $resources, array $options = []): void
     {
         foreach ($resources as $name => $controller) {
-            $this->apiResource($name, $controller, $options);
+            $this->apiResource(name: $name, controller: $controller, options: $options);
         }
     }
 
@@ -294,7 +294,7 @@ final class Router implements Mappable
             $only = array_diff($only, (array) $options['except']);
         }
 
-        return $this->resource($name, $controller, array_merge([
+        return $this->resource(name: $name, controller: $controller, options: array_merge([
             'only' => $only,
         ], $options));
     }
@@ -303,49 +303,49 @@ final class Router implements Mappable
      * Load routes from a JSON file.
      *
      * @param string $path Path to the JSON routes file.
-     * @return mixed Routes
+     * @throws TooLateToAddNewRouteException
      */
     public function loadRoutesFromJson(string $path): void
     {
-        $content = file_get_contents($path);
-        $json    = json_decode($content, true);
+        $content = file_get_contents(filename: $path);
+        $json    = json_decode(json: $content, associative: true);
 
         foreach ($json['routes'] as $route) {
             if (! empty($route['group'])) {
-                $this->handleGroupJsonRoutes($route);
+                $this->handleGroupJsonRoutes(route: $route);
                 continue;
             }
-            $this->handleSimpleJsonRoutes($route);
+            $this->handleSimpleJsonRoutes(route: $route);
         }
     }
 
     /**
      * Converts JSON routes to a route object.
      *
-     * @param  array $route Array from JSON file.
-     * @return mixed Routes.
+     * @param array $route Array from JSON file.
+     * @throws TooLateToAddNewRouteException
      */
-    public function handleSimpleJsonRoutes($route): void
+    public function handleSimpleJsonRoutes(array $route): void
     {
-        $map = $this->map($route['method'], $route['path'], $route['callback']);
+        $map = $this->map(verbs: $route['method'], uri: $route['path'], callback: $route['callback']);
 
-        $this->setExtrasOfSimpleJsonRoute($route, $map);
+        $this->setExtrasOfSimpleJsonRoute(extras: $route, route: $map);
     }
 
     /**
      * Converts JSON group routes to a route object.
      *
-     * @param  array $route Array form JSON file
-     * @return mixed Routes.
+     * @param array $route Array form JSON file.
+     * @throws TooLateToAddNewRouteException
      */
     public function handleGroupJsonRoutes($route): void
     {
         foreach ($route['group']['routes'] as $routeGroup) {
             if (isset($routeGroup['group'])) {
-                $this->handleGroupJsonRoutes($routeGroup);
+                $this->handleGroupJsonRoutes(route: $routeGroup);
                 continue;
             }
-            $this->handleSimpleJsonRoutes($routeGroup);
+            $this->handleSimpleJsonRoutes(route: $routeGroup);
         }
     }
 
@@ -355,15 +355,15 @@ final class Router implements Mappable
             return;
         }
 
-        $this->routeCollector->setBasePath($this->basePath);
+        $this->routeCollector->setBasePath(basePath: $this->basePath);
 
-        $this->fireEvents(RoutingEventHandler::EVENT_BOOT, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_BOOT, arguments: [
             'bootmanagers' => $this->bootManagers,
         ]);
 
         /* Initialize boot-managers */
         foreach ($this->bootManagers as $manager) {
-            $this->fireEvents(RoutingEventHandler::EVENT_RENDER_BOOTMANAGER, [
+            $this->fireEvents(name: RoutingEventHandler::EVENT_RENDER_BOOTMANAGER, arguments: [
                 'bootmanagers' => $this->bootManagers,
                 'bootmanager'  => $manager,
             ]);
@@ -374,19 +374,19 @@ final class Router implements Mappable
 
         $this->routesCreated = true;
 
-        $this->fireEvents(RoutingEventHandler::EVENT_LOAD_ROUTES, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD_ROUTES, arguments:[
             'routes' => $this->routes,
         ]);
 
         foreach ($this->routes as $route) {
-            $uri = $this->convertRouteToRouteCollectorRouterUri($route, $this->routeCollector);
-            $this->routeCollector->setDomain($route->getDomain());
+            $uri = $this->convertRouteToRouteCollectorRouterUri(route: $route, routeCollector: $this->routeCollector);
+            $this->routeCollector->setDomain(domain: $route->getDomain());
             /**
              * Canonical URI with trailing slash - becomes named route
              * if name is provided
              */
             $this->routeCollector->map(
-                implode('|', $route->getMethods()),
+                implode(separator: '|', array: $route->getMethods()),
                 $route->getSubDomain() ?? null,
                 Formatting::addTrailingSlash($uri),
                 $route,
@@ -396,14 +396,14 @@ final class Router implements Mappable
              * Also register URI without trailing slash
              */
             $this->routeCollector->map(
-                implode('|', $route->getMethods()),
+                implode(separator: '|', array: $route->getMethods()),
                 $route->getSubDomain() ?? null,
                 Formatting::removeTrailingSlash($uri),
                 $route
             );
         }
 
-        $this->fireEvents(RoutingEventHandler::EVENT_LOAD, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
             'loadedRoutes' => $this->getRoutes(),
         ]);
     }
@@ -413,53 +413,53 @@ final class Router implements Mappable
      */
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
-        $this->fireEvents(RoutingEventHandler::EVENT_INIT);
+        $this->fireEvents(name: RoutingEventHandler::EVENT_INIT);
 
         $this->createRoutes();
 
         $uri = $this->request->getRewriteUrl() ?? $serverRequest->getUri()->getPath();
 
         $collectorRoute = $this->routeCollector->match(
-            $serverRequest->getUri()->getHost(),
-            $uri,
-            $serverRequest->getMethod()
+            requestHost: $serverRequest->getUri()->getHost(),
+            requestUrl: $uri,
+            requestMethod: $serverRequest->getMethod()
         );
 
         $route  = $collectorRoute['target'] ?? null;
-        $params = new RouteParams($collectorRoute['params'] ?? []);
+        $params = new RouteParams(params: $collectorRoute['params'] ?? []);
 
         if (! $route) {
             return JsonResponseFactory::create(
-                'Resource not found.',
-                404,
-                ['Content-Type' => ['application/hal+json']],
-                JSON_PRETTY_PRINT
+                data: 'Resource not found.',
+                status: 404,
+                headers: ['Content-Type' => ['application/hal+json']],
+                encodingOptions: JSON_PRETTY_PRINT
             );
         }
 
-        $this->fireEvents(RoutingEventHandler::EVENT_MATCH_ROUTE, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_MATCH_ROUTE, arguments: [
             'route' => $route,
         ]);
 
         $this->currentRoute = $route;
-        return $this->handle($route, $serverRequest, $params);
+        return $this->handle(route: $route, serverRequest: $serverRequest, params: $params);
     }
 
     /**
-     * @param  object $route
-     * @param  array  $params
+     * @param object $route
+     * @param RouteParams $params
      */
-    protected function handle($route, ServerRequestInterface $serverRequest, $params): ResponseInterface
+    protected function handle(object $route, ServerRequestInterface $serverRequest, RouteParams $params): ResponseInterface
     {
         if (count($this->baseMiddleware) === 0) {
-            $this->fireEvents(RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, [
+            $this->fireEvents(name: RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, arguments: [
                 'route'       => $route,
                 'middlewares' => $route->gatherMiddlewares(),
             ]);
             return $route->handle($serverRequest, $params);
         }
 
-        $this->fireEvents(RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, arguments: [
             'route'       => $route,
             'middlewares' => $route->gatherMiddlewares(),
         ]);
@@ -477,13 +477,13 @@ final class Router implements Mappable
          *
          * @var Relay $dispatcher
          */
-        $dispatcher = new Relay($middlewares, function ($name) {
+        $dispatcher = new Relay(queue: $middlewares, resolver: function ($name) {
             if (! isset($this->middlewareResolver)) {
                 return $name;
             }
-            return $this->middlewareResolver->resolve($name);
+            return $this->middlewareResolver->resolve(name: $name);
         });
-        return $dispatcher->handle($serverRequest);
+        return $dispatcher->handle(request: $serverRequest);
     }
 
     /**
@@ -498,18 +498,18 @@ final class Router implements Mappable
     }
 
     /**
-     * Check if a route exists based on it's name.
+     * Check if a route exists based on its name.
      *
      * @param  string $name The name of the route.
      * @return bool True if the named routed exists, false otherwise.
      */
     public function has(string $name): bool
     {
-        $this->fireEvents(RoutingEventHandler::EVENT_FIND_ROUTE, [
+        $this->fireEvents(name: RoutingEventHandler::EVENT_FIND_ROUTE, arguments: [
             'name' => $name,
         ]);
 
-        $routes = array_filter($this->routes, function ($route) use ($name) {
+        $routes = array_filter(array: $this->routes, callback: function ($route) use ($name) {
             return $route->getName() === $name;
         });
         return count($routes) > 0;
@@ -524,7 +524,7 @@ final class Router implements Mappable
      * @throws RouteParamFailedConstraintException
      * @throws NamedRouteNotFoundException
      */
-    public function url(string $name, array $params = [])
+    public function url(string $name, array $params = []): string
     {
         $this->createRoutes();
         /**
@@ -546,7 +546,7 @@ final class Router implements Mappable
                 if ($regex) {
                     if (! preg_match('/' . $regex . '/', (string) $value)) {
                         throw new RouteParamFailedConstraintException(
-                            'Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`'
+                            message: 'Value `' . $value . '` for param `' . $key . '` fails constraint `' . $regex . '`'
                         );
                     }
                 }
@@ -554,53 +554,55 @@ final class Router implements Mappable
         }
 
         try {
-            $this->fireEvents(RoutingEventHandler::EVENT_GET_URL, [
+            $this->fireEvents(name: RoutingEventHandler::EVENT_GET_URL, arguments: [
                 'name'       => $name,
                 'parameters' => $params,
             ]);
 
-            return $this->routeCollector->generateUri($name, $params);
+            return $this->routeCollector->generateUri(routeName: $name, params: $params);
         } catch (Exception $e) {
-            throw new NamedRouteNotFoundException($name, null);
+            throw new NamedRouteNotFoundException(message: $name, code: 0);
         }
     }
 
     /**
      * Redirect one route to another.
      *
-     * @param  string $from   Originating route.
-     * @param  string $to     Destination route.
-     * @param  int    $status HTTP status code.
-     * @return Mappable
+     * @param string $from Originating route.
+     * @param string $to Destination route.
+     * @param int $status HTTP status code.
+     * @return Routable
+     * @throws TooLateToAddNewRouteException
      */
-    public function redirect(string $from, string $to, int $status = 302)
+    public function redirect(string $from, string $to, int $status = 302): Routable
     {
         $responseFactory = $this->responseFactory;
         $handler         = function () use ($to, $status, $responseFactory) {
-            $response = $responseFactory->createResponse($status);
+            $response = $responseFactory->createResponse(code: $status);
             return $response->withHeader('Location', (string) $to);
         };
-        return $this->get($from, $handler);
+        return $this->get(uri: $from, callback: $handler);
     }
 
     /**
      * Create a permanent redirect from one URI to another.
      *
-     * @param  string $uri
-     * @param  string $destination
-     * @return Mappable
+     * @param string $uri
+     * @param string $destination
+     * @return Routable|Mappable
+     * @throws TooLateToAddNewRouteException
      */
-    public function permanentRedirect($uri, $destination)
+    public function permanentRedirect(string $uri, string $destination): Routable|Mappable
     {
-        return $this->redirect($uri, $destination, 301);
+        return $this->redirect(from: $uri, to: $destination, status: 301);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function group($params, callable $callback): self
+    public function group(array|string $params, callable $callback): self
     {
-        $group = new RouteGroup($params, $this);
+        $group = new RouteGroup(params: $params, router: $this);
         call_user_func($callback, $group);
         return $this;
     }
@@ -626,9 +628,9 @@ final class Router implements Mappable
     /**
      * Get current route.
      *
-     * @return mixed Current route.
+     * @return Route|null Current route.
      */
-    public function currentRoute()
+    public function currentRoute(): ?Route
     {
         return $this->currentRoute;
     }
@@ -640,7 +642,7 @@ final class Router implements Mappable
      */
     public function currentRouteName(): ?string
     {
-        return $this->currentRoute ? $this->currentRoute->getName() : null;
+        return $this->currentRoute?->getName();
     }
 
     /**
@@ -653,10 +655,8 @@ final class Router implements Mappable
 
     /**
      * Get current request
-     *
-     * @return Qubus\Http\Request
      */
-    public function getRequest(): Request
+    public function getRequest(): RequestInterface
     {
         return $this->request;
     }
@@ -682,14 +682,14 @@ final class Router implements Mappable
      *
      * @param string $name
      */
-    protected function fireEvents($name, array $arguments = []): void
+    protected function fireEvents(string $name, array $arguments = []): void
     {
         if (count($this->eventHandlers) === 0) {
             return;
         }
         /** @var EventHandler $eventHandler */
         foreach ($this->eventHandlers as $eventHandler) {
-            $eventHandler->fireEvents($this, $name, $arguments);
+            $eventHandler->fireEvents(router: $this, name: $name, eventArgs: $arguments);
         }
     }
 
@@ -698,8 +698,9 @@ final class Router implements Mappable
      *
      * @param array $extras Router attributes.
      * @param Routable $route Route object.
+     * @throws TypeException
      */
-    private function setExtrasOfSimpleJsonRoute($extras, Routable $route): void
+    private function setExtrasOfSimpleJsonRoute(array $extras, Routable $route): void
     {
         if (! empty($extras['name'])) {
             $route->name($extras['name']);

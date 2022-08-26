@@ -4,17 +4,16 @@
  * Qubus\Routing
  *
  * @link       https://github.com/QubusPHP/router
- * @copyright  2020 Joshua Parker
+ * @copyright  2020
  * @license    https://opensource.org/licenses/mit-license.php MIT License
  *
+ * @author     Joshua Parker <josh@joshuaparker.blog>
  * @since      1.0.0
  */
 
 declare(strict_types=1);
 
 namespace Qubus\Routing\Interfaces;
-
-use Qubus\Routing\Router;
 
 interface Mappable
 {
@@ -31,79 +30,52 @@ interface Mappable
     /**
      * Add a route to the map
      *
-     * @param callable|string $callback
-     * @return Route
+     * @param array $verbs
      */
-    public function map(array $verbs, string $uri, $callback): Routable;
+    public function map(array $verbs, string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to any HTTP method.
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function any(string $uri, $callback): Routable;
+    public function any(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to GET HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function get(string $uri, $callback): Routable;
+    public function get(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to POST HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function post(string $uri, $callback): Routable;
+    public function post(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to PATCH HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function patch(string $uri, $callback): Routable;
+    public function patch(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to PUT HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function put(string $uri, $callback): Routable;
+    public function put(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to DELETE HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function delete(string $uri, $callback): Routable;
+    public function delete(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to HEAD HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function head(string $uri, $callback): Routable;
+    public function head(string $uri, callable|string $callback): Routable;
 
     /**
      * Add a route that responds to OPTIONS HTTP method
-     *
-     * @param callable|string $callback
-     * @return Route
      */
-    public function options(string $uri, $callback): Routable;
+    public function options(string $uri, callable|string $callback): Routable;
 
     /**
      * Add route group
-     *
-     * @param array|string $params
      */
-    public function group($params, callable $callback): Router;
+    public function group(array|string $params, callable $callback): self;
 }

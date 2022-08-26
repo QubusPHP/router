@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
-use DI\ContainerBuilder;
 use Laminas\Diactoros\ServerRequest;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Qubus\Injector\Config\InjectorFactory;
+use Qubus\Injector\Psr11\Container;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
+use Qubus\Tests\Routing\Controllers\TestConstructorParamController;
 use Qubus\Tests\Routing\Requests\TestRequest;
 use Qubus\Tests\Routing\Services\TestService;
 use ReflectionException;
@@ -20,10 +23,10 @@ class RouterDITest extends TestCase
     /** @test */
     public function canPassaContainerIntoConstructor()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router    = new Router(new RouteCollector(), $container);
 
-        $this->assertInstanceOf(Router::class, $router);
+        Assert::assertInstanceOf(Router::class, $router);
     }
 
     /** @test */
@@ -34,21 +37,21 @@ class RouterDITest extends TestCase
         $container = new stdClass();
         $router    = new Router(new RouteCollector(), $container);
 
-        $this->assertInstanceOf(Router::class, $router);
+        Assert::assertInstanceOf(Router::class, $router);
     }
 
     /** @test */
     public function routeParamsAreInjectedIntoClosure()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router    = new Router(new RouteCollector(), $container);
         $count     = 0;
 
         $router->get('/posts/{postId}/comments/{commentId}', function (int $postId, int $commentId) use (&$count) {
             $count++;
 
-            $this->assertSame(1, $postId);
-            $this->assertSame(2, $commentId);
+            Assert::assertSame(1, $postId);
+            Assert::assertSame(2, $commentId);
 
             return 'abc';
         });
@@ -56,17 +59,17 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
     public function typehintsAreInjectedIntoClosure()
     {
-        $container           = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $testServiceInstance = new TestService('abc123');
-        $container->set(TestService::class, $testServiceInstance);
+        $container->make(TestService::class, [$testServiceInstance]);
 
         $router = new Router(new RouteCollector(), $container);
         $count  = 0;
@@ -74,8 +77,8 @@ class RouterDITest extends TestCase
         $router->get('/test/route', function (TestService $test) use (&$count, $testServiceInstance) {
             $count++;
 
-            $this->assertSame($testServiceInstance, $test);
-            $this->assertSame('abc123', $test->value);
+            Assert::assertSame($testServiceInstance, $test);
+            Assert::assertSame('abc123', $test->value);
 
             return 'abc';
         });
@@ -83,17 +86,17 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
     public function typehintsAreInjectedIntoClosureWithParams()
     {
-        $container           = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $testServiceInstance = new TestService('abc123');
-        $container->set(TestService::class, $testServiceInstance);
+        $container->make(TestService::class, [$testServiceInstance]);
 
         $router = new Router(new RouteCollector(), $container);
         $count  = 0;
@@ -101,10 +104,10 @@ class RouterDITest extends TestCase
         $router->get('/posts/{postId}/comments/{commentId}', function (TestService $test, int $postId, int $commentId) use (&$count, $testServiceInstance) {
             $count++;
 
-            $this->assertSame($testServiceInstance, $test);
-            $this->assertSame('abc123', $test->value);
-            $this->assertSame(1, $postId);
-            $this->assertSame(2, $commentId);
+            Assert::assertSame($testServiceInstance, $test);
+            Assert::assertSame('abc123', $test->value);
+            Assert::assertSame(1, $postId);
+            Assert::assertSame(2, $commentId);
 
             return 'abc';
         });
@@ -112,23 +115,23 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
     public function routeParamsAreInjectedIntoClosureRegardlessOfParamOrder()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router    = new Router(new RouteCollector(), $container);
         $count     = 0;
 
         $router->get('/posts/{postId}/comments/{commentId}', function (int $commentId, int $postId) use (&$count) {
             $count++;
 
-            $this->assertSame(1, $postId);
-            $this->assertSame(2, $commentId);
+            Assert::assertSame(1, $postId);
+            Assert::assertSame(2, $commentId);
 
             return 'abc';
         });
@@ -136,9 +139,9 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc', $response->getBody()->getContents());
     }
 
     /** @test */
@@ -146,7 +149,7 @@ class RouterDITest extends TestCase
     {
         $this->expectException(ReflectionException::class);
 
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router    = new Router(new RouteCollector(), $container);
 
         $router->get('/test/route', function (UndefinedType $test) {
@@ -159,7 +162,7 @@ class RouterDITest extends TestCase
     /** @test */
     public function routeParamsAreInjectedIntoControllerClass()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router    = new Router(new RouteCollector(), $container);
 
         $router->get('/posts/{postId}/comments/{commentId}', 'Qubus\Tests\Routing\Controllers\TestController@expectsInjectedParams');
@@ -167,16 +170,16 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('$postId: 1 $commentId: 2', $response->getBody()->getContents());
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('$postId: 1 $commentId: 2', $response->getBody()->getContents());
     }
 
     /** @test */
     public function typehintsAreInjectedIntoControllerClass()
     {
-        $container           = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $testServiceInstance = new TestService('abc123');
-        $container->set(TestService::class, $testServiceInstance);
+        $container->make(TestService::class, [$testServiceInstance]);
 
         $router = new Router(new RouteCollector(), $container);
 
@@ -185,16 +188,16 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/test/route', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function typehintsAreInjectedIntoControllerClassWithParams()
     {
-        $container           = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $testServiceInstance = new TestService('abc123');
-        $container->set(TestService::class, $testServiceInstance);
+        $container->make(TestService::class, [$testServiceInstance]);
 
         $router = new Router(new RouteCollector(), $container);
 
@@ -203,14 +206,14 @@ class RouterDITest extends TestCase
         $request  = new ServerRequest([], [], '/posts/1/comments/2', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getBody()->getContents());
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('$postId: 1 $commentId: 2 TestService: abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function canInjectRequestObject()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $request   = new ServerRequest([], [], '/test/route', 'GET');
         $router    = new Router(new RouteCollector(), $container);
         $count     = 0;
@@ -218,24 +221,24 @@ class RouterDITest extends TestCase
         $router->get('/test/route', function (ServerRequest $injectedRequest) use (&$count) {
             $count++;
 
-            $this->assertInstanceOf(ServerRequest::class, $injectedRequest);
-            $this->assertSame('GET', $injectedRequest->getMethod());
-            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
+            Assert::assertInstanceOf(ServerRequest::class, $injectedRequest);
+            Assert::assertSame('GET', $injectedRequest->getMethod());
+            Assert::assertSame('/test/route', $injectedRequest->getUri()->getPath());
 
             return 'abc123';
         });
 
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function canInjectRequestObjectWithaBody()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $request   = new ServerRequest([], [], '/test/route', 'POST', 'php://input', [], [], [], 'post body');
         $router    = new Router(new RouteCollector(), $container);
         $count     = 0;
@@ -243,25 +246,25 @@ class RouterDITest extends TestCase
         $router->post('/test/route', function (ServerRequest $injectedRequest) use (&$count) {
             $count++;
 
-            $this->assertInstanceOf(ServerRequest::class, $injectedRequest);
-            $this->assertSame('POST', $injectedRequest->getMethod());
-            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
-            $this->assertSame('post body', $injectedRequest->getParsedBody());
+            Assert::assertInstanceOf(ServerRequest::class, $injectedRequest);
+            Assert::assertSame('POST', $injectedRequest->getMethod());
+            Assert::assertSame('/test/route', $injectedRequest->getUri()->getPath());
+            Assert::assertSame('post body', $injectedRequest->getParsedBody());
 
             return 'abc123';
         });
 
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function canInjectRequestSubClass()
     {
-        $container = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $request   = new ServerRequest([], [], '/test/route', 'GET');
         $router    = new Router(new RouteCollector(), $container);
 
@@ -270,34 +273,34 @@ class RouterDITest extends TestCase
         $router->get('/test/route', function (TestRequest $injectedRequest) use (&$count) {
             $count++;
 
-            $this->assertInstanceOf(TestRequest::class, $injectedRequest);
-            $this->assertSame('GET', $injectedRequest->getMethod());
-            $this->assertSame('/test/route', $injectedRequest->getUri()->getPath());
+            Assert::assertInstanceOf(TestRequest::class, $injectedRequest);
+            Assert::assertSame('GET', $injectedRequest->getMethod());
+            Assert::assertSame('/test/route', $injectedRequest->getUri()->getPath());
 
             return 'abc123';
         });
 
         $response = $router->match($request);
 
-        $this->assertSame(1, $count);
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(1, $count);
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 
     /** @test */
     public function constructorParamsAreInjectedIntoControllerClass()
     {
-        $container           = ContainerBuilder::buildDevContainer();
+        $container = new Container(InjectorFactory::create([]));
         $router              = new Router(new RouteCollector(), $container);
         $testServiceInstance = new TestService('abc123');
-        $container->set(TestService::class, $testServiceInstance);
+        $container->make(TestService::class, [$testServiceInstance]);
 
-        $router->get('/test/url', 'Qubus\Tests\Routing\Controllers\TestConstructorParamController@returnTestServiceValue');
+        $router->get('/test/url', [TestConstructorParamController::class, 'Qubus\Tests\Routing\Controllers\TestConstructorParamController@returnTestServiceValue']);
 
         $request  = new ServerRequest([], [], '/test/url', 'GET');
         $response = $router->match($request);
 
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('abc123', $response->getBody()->getContents());
+        Assert::assertSame(200, $response->getStatusCode());
+        Assert::assertSame('abc123', $response->getBody()->getContents());
     }
 }
