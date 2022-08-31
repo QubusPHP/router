@@ -39,7 +39,7 @@ final class Route implements Routable
 {
     use Macroable;
 
-    protected string $uri;
+    protected string $uri = '';
     protected array $methods = [];
     protected RouteAction $routeAction;
     protected ?string $name = null;

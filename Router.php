@@ -79,7 +79,7 @@ final class Router implements Mappable
 
     protected int $routeCollectorMatchTypeId = 1;
 
-    protected string $basePath;
+    protected string $basePath = '';
 
     protected ?Route $currentRoute = null;
 
@@ -96,7 +96,7 @@ final class Router implements Mappable
 
     protected ?string $defaultNamespace = null;
 
-    protected string $namespace;
+    protected string $namespace = '';
 
     /** @var array $bootManagers */
     protected array $bootManagers = [];
