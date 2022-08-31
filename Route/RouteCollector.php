@@ -44,9 +44,9 @@ class RouteCollector implements Collector
     /** @var array Array of all named routes. */
     protected array $namedRoutes = [];
     /** @var string domain */
-    protected string $domain;
+    protected string $domain = '';
     /** @var string subdomain */
-    protected string $subdomain;
+    protected string $subdomain = '';
     /**
      * @var string Can be used to ignore leading part of the Request
      * URL (if main file lives in subdirectory of host)
