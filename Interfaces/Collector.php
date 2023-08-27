@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -61,7 +59,7 @@ interface Collector
      *                     reverse route this url in your application.
      * @throws RuntimeException
      */
-    public function map(string $method, string $domain, string $route, mixed $target, ?string $name = null);
+    public function map(string $method, string $domain, string $route, mixed $target, ?string $name = null): void;
 
     /**
      * Reversed routing

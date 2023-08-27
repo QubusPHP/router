@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -39,30 +37,30 @@ final class RouterFactory implements RouterableFactory
         ?MiddlewareResolver $middlewareResolver = null
     ): Router {
         return new Router(
-            $routeCollector ?? static::$routeCollector,
-            $container ?? static::$container,
-            $responseFactory ?? static::$responseFactory,
-            $middlewareResolver ?? static::$middlewareResolver
+            $routeCollector ?? self::$routeCollector,
+            $container ?? self::$container,
+            $responseFactory ?? self::$responseFactory,
+            $middlewareResolver ?? self::$middlewareResolver
         );
     }
 
     public static function setRouteCollector(Collector $routeCollector): void
     {
-        static::$routeCollector = $routeCollector;
+        self::$routeCollector = $routeCollector;
     }
 
     public static function setContainer(ContainerInterface $container): void
     {
-        static::$container = $container;
+        self::$container = $container;
     }
 
     public static function setResponseFactory(ResponseFactoryInterface $responseFactory): void
     {
-        static::$responseFactory = $responseFactory;
+        self::$responseFactory = $responseFactory;
     }
 
     public static function setMiddlewareResolver(MiddlewareResolver $middlewareResolver): void
     {
-        static::$middlewareResolver = $middlewareResolver;
+        self::$middlewareResolver = $middlewareResolver;
     }
 }

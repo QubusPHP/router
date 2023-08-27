@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -38,18 +36,18 @@ final class RouteFactory implements RoutableFactory
             $uri,
             $action,
             $defaultNamespace,
-            $invoker ?? static::$invoker,
-            $middlewareResolver ?? static::$middlewareResolver
+            $invoker ?? self::$invoker,
+            $middlewareResolver ?? self::$middlewareResolver
         );
     }
 
     public static function setInvoker(InvokerInterface $invoker): void
     {
-        static::$invoker = $invoker;
+        self::$invoker = $invoker;
     }
 
     public static function setMiddlewareResolver(MiddlewareResolver $middlewareResolver): void
     {
-        static::$middlewareResolver = $middlewareResolver;
+        self::$middlewareResolver = $middlewareResolver;
     }
 }

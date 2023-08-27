@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -18,6 +16,7 @@ namespace Qubus\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Qubus\Exception\Data\TypeException;
+use Qubus\Routing\Controller\InjectorMiddlewareResolver;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
 use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
@@ -69,7 +68,7 @@ final class Route implements Routable
         $this->setAction(action: $action);
     }
 
-    protected function setUri(string $uri)
+    protected function setUri(string $uri): void
     {
         $this->uri = rtrim(string: $uri, characters: ' /');
     }

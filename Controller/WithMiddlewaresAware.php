@@ -5,17 +5,13 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
 
 namespace Qubus\Routing\Controller;
-
-use Psr\Http\Server\MiddlewareInterface;
 
 use function is_array;
 

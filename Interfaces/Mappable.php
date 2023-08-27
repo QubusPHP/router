@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -31,6 +29,9 @@ interface Mappable
      * Add a route to the map
      *
      * @param array $verbs
+     * @param string $uri
+     * @param callable|string $callback
+     * @return Routable
      */
     public function map(array $verbs, string $uri, callable|string $callback): Routable;
 
