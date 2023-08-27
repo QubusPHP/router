@@ -5,16 +5,15 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
 
 namespace Qubus\Routing;
 
+use Exception as PHPException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -303,7 +302,7 @@ final class Router implements Mappable
      * Load routes from a JSON file.
      *
      * @param string $path Path to the JSON routes file.
-     * @throws TooLateToAddNewRouteException
+     * @throws TooLateToAddNewRouteException|TypeException
      */
     public function loadRoutesFromJson(string $path): void
     {
@@ -323,7 +322,7 @@ final class Router implements Mappable
      * Converts JSON routes to a route object.
      *
      * @param array $route Array from JSON file.
-     * @throws TooLateToAddNewRouteException
+     * @throws TooLateToAddNewRouteException|TypeException
      */
     public function handleSimpleJsonRoutes(array $route): void
     {
@@ -336,7 +335,7 @@ final class Router implements Mappable
      * Converts JSON group routes to a route object.
      *
      * @param array $route Array form JSON file.
-     * @throws TooLateToAddNewRouteException
+     * @throws TooLateToAddNewRouteException|TypeException
      */
     public function handleGroupJsonRoutes($route): void
     {
@@ -410,6 +409,7 @@ final class Router implements Mappable
 
     /**
      * @return mixed
+     * @throws PHPException
      */
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
@@ -447,10 +447,15 @@ final class Router implements Mappable
 
     /**
      * @param object $route
+     * @param ServerRequestInterface $serverRequest
      * @param RouteParams $params
+     * @return ResponseInterface
      */
-    protected function handle(object $route, ServerRequestInterface $serverRequest, RouteParams $params): ResponseInterface
-    {
+    protected function handle(
+        object $route,
+        ServerRequestInterface $serverRequest,
+        RouteParams $params
+    ): ResponseInterface {
         if (count($this->baseMiddleware) === 0) {
             $this->fireEvents(name: RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, arguments: [
                 'route'       => $route,
@@ -681,6 +686,7 @@ final class Router implements Mappable
      * Fire event in event-handler.
      *
      * @param string $name
+     * @param array $arguments
      */
     protected function fireEvents(string $name, array $arguments = []): void
     {

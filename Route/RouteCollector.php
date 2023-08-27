@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -150,7 +148,7 @@ class RouteCollector implements Collector
      *                     reverse route this url in your application.
      * @throws RuntimeException
      */
-    public function map(string $method, ?string $subdomain, string $route, mixed $target, ?string $name = null)
+    public function map(string $method, ?string $subdomain, string $route, mixed $target, ?string $name = null): void
     {
         $this->subdomain = $subdomain;
 
@@ -227,8 +225,11 @@ class RouteCollector implements Collector
      * @return array|bool Array with route information on success, false on failure (no match).
      * @throws Exception
      */
-    public function match(?string $requestHost = null, ?string $requestUrl = null, ?string $requestMethod = null): array|bool
-    {
+    public function match(
+        ?string $requestHost = null,
+        ?string $requestUrl = null,
+        ?string $requestMethod = null
+    ): array|bool {
         $params = [];
         /**
          * Set Request Host if it isn't passed as parameter.
@@ -264,12 +265,13 @@ class RouteCollector implements Collector
         if (null === $requestMethod) {
             $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         }
+
         foreach ($this->routes as $handler) {
             [$methods, $subdomain, $route, $target, $name] = $handler;
             /**
              * Check if request domain matches. If not, abandon early. (CHEAPER).
              */
-            if ($this->domain != null && $subdomain != null && $requestHost != $subdomain . '.' . $this->domain) {
+            if ((null != $this->domain && null != $subdomain) && $requestHost !== $subdomain . '.' . $this->domain) {
                 continue;
             }
 
@@ -355,6 +357,7 @@ class RouteCollector implements Collector
      * Compile the regex for a given route.
      *
      * @param $route
+     * @return string
      */
     protected function compileRoute($route): string
     {
@@ -378,14 +381,14 @@ class RouteCollector implements Collector
                  * @var string
                  */
                 $pattern = '(?:'
-                    . ($pre !== '' ? $pre : null)
-                    . '('
-                    . ($param !== '' ? "?P<$param>" : null)
-                    . $type
-                    . ')'
-                    . $optional
-                    . ')'
-                    . $optional;
+                . ($pre !== '' ? $pre : null)
+                . '('
+                . ($param !== '' ? "?P<$param>" : null)
+                . $type
+                . ')'
+                . $optional
+                . ')'
+                . $optional;
 
                 $route = str_replace(search: $block, replace: $pattern, subject: $route);
             }

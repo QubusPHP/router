@@ -5,10 +5,8 @@
  *
  * @link       https://github.com/QubusPHP/router
  * @copyright  2020
+ * @author     Joshua Parker <joshua@joshuaparker.dev>
  * @license    https://opensource.org/licenses/mit-license.php MIT License
- *
- * @author     Joshua Parker <josh@joshuaparker.blog>
- * @since      1.0.0
  */
 
 declare(strict_types=1);
@@ -129,6 +127,7 @@ class RouteResource
     /**
      * Extract the resource and prefix from a resource name.
      *
+     * @param string $name
      * @return array
      */
     protected function getResourcePrefix(string $name): array
@@ -226,6 +225,9 @@ class RouteResource
     /**
      * Get the action array for a resource route.
      *
+     * @param string $resource
+     * @param string $controller
+     * @param string $method
      * @param array $options
      * @return array
      */
@@ -265,7 +267,10 @@ class RouteResource
     /**
      * Get the name for a given resource.
      *
+     * @param string $resource
+     * @param string $method
      * @param array $options
+     * @return string
      */
     protected function getResourceRouteName(string $resource, string $method, array $options): string
     {
@@ -301,7 +306,11 @@ class RouteResource
     /**
      * Add the index method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceIndex(string $name, string $base, string $controller, array $options): mixed
     {
@@ -325,7 +334,11 @@ class RouteResource
     /**
      * Add the create method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceCreate(string $name, string $base, string $controller, array $options): mixed
     {
@@ -349,7 +362,11 @@ class RouteResource
     /**
      * Add the store method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceStore(string $name, string $base, string $controller, array $options): mixed
     {
@@ -373,7 +390,11 @@ class RouteResource
     /**
      * Add the show method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceShow(string $name, string $base, string $controller, array $options): mixed
     {
@@ -399,7 +420,11 @@ class RouteResource
     /**
      * Add the edit method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceEdit(string $name, string $base, string $controller, array $options): mixed
     {
@@ -425,7 +450,11 @@ class RouteResource
     /**
      * Add the update method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceUpdate(string $name, string $base, string $controller, array $options): mixed
     {
@@ -451,7 +480,11 @@ class RouteResource
     /**
      * Add the destroy method for a resourceful route.
      *
+     * @param string $name
+     * @param string $base
+     * @param string $controller
      * @param array $options
+     * @return mixed
      */
     protected function addResourceDestroy(string $name, string $base, string $controller, array $options): mixed
     {
@@ -477,7 +510,9 @@ class RouteResource
     /**
      * Get the name for a given resource with shallowness applied when applicable.
      *
+     * @param string $name
      * @param array $options
+     * @return string
      */
     protected function getShallowName(string $name, array $options): string
     {
@@ -524,13 +559,16 @@ class RouteResource
      * Get or set the action verbs used in the resource URIs.
      *
      * @param array $methodActionNames
+     * @return array
      */
-    public static function methodActionNames(array $methodActionNames = []): mixed
+    public static function methodActionNames(array $methodActionNames = []): array
     {
         if (empty($methodActionNames)) {
             return static::$methodActionNames;
         } else {
             static::$methodActionNames = array_merge(static::$methodActionNames, $methodActionNames);
         }
+
+        return [];
     }
 }

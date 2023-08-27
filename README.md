@@ -19,7 +19,7 @@ Qubus router is a powerful and fast PHP router for PSR-7/PSR-15 messages.
 * and more . . .
 
 ## Requirements
-* PHP 7.4+
+* PHP 8.2+
 
 ## Installation
 
@@ -46,5 +46,6 @@ location / {
 }
 ```
 
-## Documentation
-Still in the works but please check out the [wiki](//github.com/QubusPHP/router/wiki).
+## More Info
+- [Documentation](https://docs.qubusphp.com/routing/)
+- [Contributing](https://docs.stalframework.com/contributing/)
