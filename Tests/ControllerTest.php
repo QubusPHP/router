@@ -8,9 +8,17 @@ use Laminas\Diactoros\ServerRequest;
 use Mockery;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Qubus\Http\Request;
+use Qubus\Http\Response;
 use Qubus\Injector\Config\InjectorFactory;
+use Qubus\Injector\Injector;
 use Qubus\Injector\Psr11\Container;
 use Qubus\Routing\Controller\ControllerMiddlewareOptions;
+use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
@@ -19,17 +27,33 @@ use Qubus\Tests\Routing\Middlewares\AddHeaderMiddleware;
 
 class ControllerTest extends TestCase
 {
+    private ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = new Container(InjectorFactory::create([
+            Injector::STANDARD_ALIASES => [
+                RequestInterface::class => Request::class,
+                ResponseInterface::class => Response::class,
+                ResponseFactoryInterface::class => ResponseFactory::class,
+                \Psr\Http\Message\ServerRequestInterface::class => \Laminas\Diactoros\ServerRequest::class,
+                \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
+                \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
+                    \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+            ],
+        ]));
+    }
+
     /** @test */
     public function canAddSingleMiddlewareViaController()
     {
-        $container = new Container(InjectorFactory::create([]));
         $request   = new ServerRequest([], [], '/test/123', 'GET');
-        $router    = new Router(new RouteCollector(), $container);
+        $router    = new Router(new RouteCollector(), $this->container);
         $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'));
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $router->get(
             '/test/123',
@@ -45,15 +69,14 @@ class ControllerTest extends TestCase
     /** @test */
     public function canResolveMiddlewareOnaControllerUsingCustomResolver()
     {
-        $container = new Container(InjectorFactory::create([]));
         $resolver  = $this->createMockMiddlewareResolverWithHeader('X-Header', 'testing123');
         $request   = new ServerRequest([], [], '/test/123', 'GET');
-        $router    = new Router(new RouteCollector(), $container, null, $resolver);
+        $router    = new Router(new RouteCollector(), $this->container, null, $resolver);
         $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware('middleware-key');
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $router->get(
             '/test/123',
@@ -69,9 +92,8 @@ class ControllerTest extends TestCase
     /** @test */
     public function canAddMultipleMiddlewareAsArrayViaController()
     {
-        $container = new Container(InjectorFactory::create([]));
         $request   = new ServerRequest([], [], '/test/123', 'GET');
-        $router    = new Router(new RouteCollector(), $container);
+        $router    = new Router(new RouteCollector(), $this->container);
         $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
 
         $controller = new MiddlewareProvidingController();
@@ -79,7 +101,7 @@ class ControllerTest extends TestCase
             new AddHeaderMiddleware('X-Header-1', 'testing123'),
             new AddHeaderMiddleware('X-Header-2', 'testing456'),
         ]);
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $router->get(
             '/test/123',
@@ -107,12 +129,11 @@ class ControllerTest extends TestCase
     /** @test */
     public function middlewareCanBeLimitedToMethodsUsingOnly()
     {
-        $container = new Container(InjectorFactory::create([]));
-        $router    = new Router(new RouteCollector(), $container);
+        $router = new Router(new RouteCollector(), $this->container);
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->only('returnOne');
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $middlewareAppliedToMethods = [
             'returnOne'   => true,
@@ -126,12 +147,11 @@ class ControllerTest extends TestCase
     /** @test */
     public function middlewareCanBeLimitedToMultipleMethodsUsingOnly()
     {
-        $container = new Container(InjectorFactory::create([]));
-        $router    = new Router(new RouteCollector(), $container);
+        $router = new Router(new RouteCollector(), $this->container);
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->only(['returnOne', 'returnThree']);
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $middlewareAppliedToMethods = [
             'returnOne'   => true,
@@ -145,12 +165,11 @@ class ControllerTest extends TestCase
     /** @test */
     public function middlewareCanBeLimitedToMethodsUsingExcept()
     {
-        $container = new Container(InjectorFactory::create([]));
-        $router    = new Router(new RouteCollector(), $container);
+        $router = new Router(new RouteCollector(), $this->container);
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->except('returnOne');
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $middlewareAppliedToMethods = [
             'returnOne'   => false,
@@ -164,12 +183,14 @@ class ControllerTest extends TestCase
     /** @test */
     public function middlewareCanBeLimitedToMultipleMethodsUsingExcept()
     {
-        $container = new Container(InjectorFactory::create([]));
-        $router    = new Router(new RouteCollector(), $container);
+        $router = new Router(new RouteCollector(), $this->container);
 
         $controller = new MiddlewareProvidingController();
-        $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->except(['returnOne', 'returnThree']);
-        $container->make(MiddlewareProvidingController::class, [$controller]);
+        $controller->middleware(new AddHeaderMiddleware(
+            'X-Header',
+            'testing123'
+        ))->except(['returnOne', 'returnThree']);
+        $this->container->make(MiddlewareProvidingController::class, [$controller]);
 
         $middlewareAppliedToMethods = [
             'returnOne'   => false,

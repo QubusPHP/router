@@ -6,18 +6,45 @@ namespace Qubus\Tests\Routing;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Qubus\Exception\Data\TypeException;
+use Qubus\Http\Request;
+use Qubus\Http\Response;
+use Qubus\Injector\Config\InjectorFactory;
+use Qubus\Injector\Injector;
+use Qubus\Injector\Psr11\Container;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
+use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
 
 class RouteTest extends TestCase
 {
+    private ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = new Container(InjectorFactory::create([
+            Injector::STANDARD_ALIASES => [
+                RequestInterface::class => Request::class,
+                ResponseInterface::class => Response::class,
+                ResponseFactoryInterface::class => ResponseFactory::class,
+                \Psr\Http\Message\ServerRequestInterface::class => \Laminas\Diactoros\ServerRequest::class,
+                \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
+                \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
+                \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+            ],
+        ]));
+    }
+
     /** @test */
     public function aRouteCanBeNamed()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         Assert::assertFalse($router->has('test'));
         $route = $router->get('test/123', function () {
@@ -28,7 +55,7 @@ class RouteTest extends TestCase
     /** @test */
     public function nameFunctionIsChainable()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         Assert::assertInstanceOf(Route::class, $router->get('test/123', function () {
         })->name('test'));
@@ -39,7 +66,7 @@ class RouteTest extends TestCase
     {
         $this->expectException(RouteNameRedefinedException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('test/123', function () {
         })->name('test1')->name('test2');
@@ -48,7 +75,7 @@ class RouteTest extends TestCase
     /** @test */
     public function whereFunctionIsChainable()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where('id', '[0-9]+'));
@@ -57,7 +84,7 @@ class RouteTest extends TestCase
     /** @test */
     public function whereFunctionIsChainableWhenPassedAnArray()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where(['id' => '[0-9]+']));
@@ -68,7 +95,7 @@ class RouteTest extends TestCase
     {
         $this->expectException(TypeException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         Assert::assertInstanceOf(Route::class, $router->get('test/{id}', function () {
         })->where());
@@ -77,7 +104,7 @@ class RouteTest extends TestCase
     /** @test */
     public function canGetRouteActionNameWhenClosure()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', function () {
         });
 
@@ -87,7 +114,7 @@ class RouteTest extends TestCase
     /** @test */
     public function canGetRouteActionNameWhenCallable()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', [TestCallableController::class, 'testStatic']);
 
         Assert::assertSame(TestCallableController::class . '@testStatic', $route->getActionName());
@@ -96,7 +123,7 @@ class RouteTest extends TestCase
     /** @test */
     public function canGetRouteActionNameWhenCallableInstance()
     {
-        $router     = new Router(new RouteCollector());
+        $router     = new Router(new RouteCollector(), $this->container);
         $controller = new TestCallableController();
         $route      = $router->get('test/123', [$controller, 'test']);
 
@@ -106,7 +133,7 @@ class RouteTest extends TestCase
     /** @test */
     public function canGetRouteActionNameWhenControllerString()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', TestCallableController::class . '@test');
 
         Assert::assertSame(TestCallableController::class . '@test', $route->getActionName());

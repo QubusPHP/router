@@ -23,7 +23,7 @@ interface RouterableFactory
 {
     public static function create(
         Collector $routeCollector,
-        ?ContainerInterface $container = null,
+        ContainerInterface $container,
         ?ResponseFactoryInterface $responseFactory = null,
         ?MiddlewareResolver $middlewareResolver = null
     ): Router;

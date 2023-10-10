@@ -8,14 +8,23 @@ use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Diactoros\ServerRequest;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Qubus\Http\Request;
+use Qubus\Http\Response;
+use Qubus\Injector\Config\InjectorFactory;
+use Qubus\Injector\Injector;
+use Qubus\Injector\Psr11\Container;
 use Qubus\Routing\Exceptions\NamedRouteNotFoundException;
 use Qubus\Routing\Exceptions\RouteControllerNotFoundException;
 use Qubus\Routing\Exceptions\RouteMethodNotFoundException;
 use Qubus\Routing\Exceptions\RouteParamFailedConstraintException;
 use Qubus\Routing\Exceptions\RouteParseException;
 use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
+use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
@@ -24,10 +33,27 @@ use Qubus\Routing\Router;
 
 class RouterTest extends TestCase
 {
+    private ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = new Container(InjectorFactory::create([
+            Injector::STANDARD_ALIASES => [
+                RequestInterface::class => Request::class,
+                ResponseInterface::class => Response::class,
+                ResponseFactoryInterface::class => ResponseFactory::class,
+                \Psr\Http\Message\ServerRequestInterface::class => \Laminas\Diactoros\ServerRequest::class,
+                \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
+                \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
+                \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+            ],
+        ]));
+    }
+
     /** @test */
     public function mapReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->map([Router::HTTP_METHOD_GET], '/test/123', function () {
         });
@@ -40,7 +66,7 @@ class RouterTest extends TestCase
     /** @test */
     public function mapAcceptsLowercaseVerbs()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->map(['get', 'head', 'post', 'put', 'patch', 'delete', 'options'], '/test/123', function () {
         });
@@ -51,7 +77,7 @@ class RouterTest extends TestCase
     /** @test */
     public function getReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', function () {
         });
@@ -64,7 +90,7 @@ class RouterTest extends TestCase
     /** @test */
     public function headReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->head('/test/123', function () {
         });
@@ -77,7 +103,7 @@ class RouterTest extends TestCase
     /** @test */
     public function postReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->post('/test/123', function () {
         });
@@ -90,7 +116,7 @@ class RouterTest extends TestCase
     /** @test */
     public function patchReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->patch('/test/123', function () {
         });
@@ -103,7 +129,7 @@ class RouterTest extends TestCase
     /** @test */
     public function putReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->put('/test/123', function () {
         });
@@ -116,7 +142,7 @@ class RouterTest extends TestCase
     /** @test */
     public function deleteReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->delete('/test/123', function () {
         });
@@ -129,7 +155,7 @@ class RouterTest extends TestCase
     /** @test */
     public function optionsReturnsaRouteObject()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->options('/test/123', function () {
         });
@@ -142,7 +168,7 @@ class RouterTest extends TestCase
     /** @test */
     public function mapRemovesTrailingSlashFromUri()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->map([Router::HTTP_METHOD_GET], '/test/123/', function () {
         });
@@ -156,7 +182,7 @@ class RouterTest extends TestCase
     public function noReturnFromRouteActionResultsIna204StatusCode()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('test/123', function () use (&$count) {
@@ -172,7 +198,7 @@ class RouterTest extends TestCase
     public function leadingSlashIsOptionalWhenCreatingaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('test/123', function () use (&$count) {
@@ -188,7 +214,7 @@ class RouterTest extends TestCase
     public function matchReturnsaResponseObject()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -206,7 +232,7 @@ class RouterTest extends TestCase
     public function matchDoesNotMutateReturnedResponseObject()
     {
         $request  = new ServerRequest([], [], '/test/123', 'GET');
-        $router   = new Router(new RouteCollector());
+        $router   = new Router(new RouteCollector(), $this->container);
         $response = new TextResponse('This is a test', 202, ['content-type' => 'text/plain']);
 
         $route          = $router->get('/test/123', function () use (&$response) {
@@ -221,7 +247,7 @@ class RouterTest extends TestCase
     public function matchReturnsa404ResponseObjectWhenRouteIsNotFound()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $response = $router->match($request);
 
@@ -233,7 +259,7 @@ class RouterTest extends TestCase
     public function matchWorksWithaClosure()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -251,7 +277,7 @@ class RouterTest extends TestCase
     public function matchUriWithTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123/', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -269,7 +295,7 @@ class RouterTest extends TestCase
     public function matchUriWithTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123/', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123/', function () use (&$count) {
@@ -287,7 +313,7 @@ class RouterTest extends TestCase
     public function matchUriWithoutTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -305,7 +331,7 @@ class RouterTest extends TestCase
     public function matchUriWithoutTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123/', function () use (&$count) {
@@ -323,7 +349,7 @@ class RouterTest extends TestCase
     public function matchWorksWithaClassAndMethodString()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route    = $router->get('/test/123', 'Qubus\Tests\Routing\Controllers\TestController@returnHelloWorld');
         $response = $router->match($request);
@@ -336,7 +362,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(RouteParseException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', 'Qubus\Tests\Routing\Controllers\TestController:returnHelloWorld');
     }
@@ -346,7 +372,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(RouteControllerNotFoundException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', 'Qubus\Tests\Routing\Controllers\UndefinedController@returnHelloWorld');
     }
@@ -356,7 +382,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(RouteMethodNotFoundException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', 'Qubus\Tests\Routing\Controllers\TestController@undefinedMethod');
     }
@@ -365,7 +391,7 @@ class RouterTest extends TestCase
     public function paramsAreParsedAndPassedIntoCallbackFunction()
     {
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
             $count++;
@@ -383,7 +409,7 @@ class RouterTest extends TestCase
     public function paramsAreParsedAndPassedIntoCallbackFunctionWhenSurroundedByWhitespace()
     {
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
             $count++;
@@ -402,7 +428,7 @@ class RouterTest extends TestCase
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
-        $router             = new Router(new RouteCollector());
+        $router             = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
             $count++;
@@ -419,7 +445,7 @@ class RouterTest extends TestCase
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
-        $router             = new Router(new RouteCollector());
+        $router             = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
             $count++;
@@ -436,7 +462,7 @@ class RouterTest extends TestCase
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
-        $router             = new Router(new RouteCollector());
+        $router             = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{postId}/comments', function () use (&$count) {
             $count++;
@@ -453,7 +479,7 @@ class RouterTest extends TestCase
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
-        $router             = new Router(new RouteCollector());
+        $router             = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{postId}/comments/{commentId}', function () use (&$count) {
             $count++;
@@ -474,7 +500,7 @@ class RouterTest extends TestCase
         $matchingRequest1   = new ServerRequest([], [], '/posts/123', 'GET');
         $matchingRequest2   = new ServerRequest([], [], '/posts', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
-        $router             = new Router(new RouteCollector());
+        $router             = new Router(new RouteCollector(), $this->container);
 
         $count = 0;
 
@@ -492,7 +518,7 @@ class RouterTest extends TestCase
     /** @test */
     public function canGenerateCanonicalUriWithTrailingSlashForNamedRoute()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/all', function () {
         })->name('test.name');
@@ -503,7 +529,7 @@ class RouterTest extends TestCase
     /** @test */
     public function canGenerateCanonicalUriWithTrailingSlashForNamedRouteWithParams()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{id}/comments', function () {
         })->name('test.name');
@@ -516,7 +542,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(RouteParamFailedConstraintException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/posts/{id}/comments', function () {
         })
@@ -531,7 +557,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(NamedRouteNotFoundException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $router->url('test.name');
     }
@@ -539,7 +565,7 @@ class RouterTest extends TestCase
     /** @test */
     public function canGenerateCanonicalUriAfterMatchHasBeenCalled()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route   = $router->get('/posts/all', function () {
         })->name('test.name');
@@ -554,7 +580,7 @@ class RouterTest extends TestCase
     {
         $this->expectException(TooLateToAddNewRouteException::class);
 
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('posts/all', function () {
         })->name('test.name');
@@ -570,7 +596,7 @@ class RouterTest extends TestCase
         $this->expectException(TooLateToAddNewRouteException::class);
 
         $request = new ServerRequest([], [], '/posts/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('posts/all', function () {
         });
@@ -584,7 +610,7 @@ class RouterTest extends TestCase
     public function canAddRoutesInaGroup()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
@@ -606,7 +632,7 @@ class RouterTest extends TestCase
     public function canAddRoutesInaGroupUsingArrayAsFirstParam()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['prefix' => 'prefix'], function ($group) use (&$count) {
@@ -628,7 +654,7 @@ class RouterTest extends TestCase
     public function canAddRoutesInaGroupUsingArrayAsFirstParamWithNoPrefix()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group([], function ($group) use (&$count) {
@@ -650,7 +676,7 @@ class RouterTest extends TestCase
     public function groupPrefixesWorkWithLeadingSlash()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['prefix' => '/prefix'], function ($group) use (&$count) {
@@ -672,7 +698,7 @@ class RouterTest extends TestCase
     public function groupPrefixesWorkWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['prefix' => 'prefix/'], function ($group) use (&$count) {
@@ -694,7 +720,7 @@ class RouterTest extends TestCase
     public function canSetBasePath()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('/base-path/');
         $count = 0;
 
@@ -713,7 +739,7 @@ class RouterTest extends TestCase
     public function canSetBasePathWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('/base-path');
         $count = 0;
 
@@ -732,7 +758,7 @@ class RouterTest extends TestCase
     public function canSetBasePathWithoutLeadingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('base-path/');
         $count = 0;
 
@@ -751,7 +777,7 @@ class RouterTest extends TestCase
     public function canSetBasePathWithoutLeadingOrTrailingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('base-path');
         $count = 0;
 
@@ -769,7 +795,7 @@ class RouterTest extends TestCase
     /** @test */
     public function canUpdateBasePathAfterMatchHasBeenCalled()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('/base-path/');
         $count = 0;
 
@@ -796,7 +822,7 @@ class RouterTest extends TestCase
     public function canAddMiddlewareAsaClosureToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -821,7 +847,7 @@ class RouterTest extends TestCase
     public function canGetCurrentlyMatchedRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route = $router->get('/test/123', function () use (&$count) {
@@ -840,7 +866,7 @@ class RouterTest extends TestCase
     public function canGetCurrentlyMatchedRouteName()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route = $router->get('/test/123', function () use (&$count) {
@@ -859,7 +885,7 @@ class RouterTest extends TestCase
     public function currentRouteNameReturnsNullWhenMatchNotYetCalled()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', function () {
             return 'abc123';
@@ -872,7 +898,7 @@ class RouterTest extends TestCase
     public function currentRouteNameReturnsNullWhenMatchedRouteHasNoName()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $route = $router->get('/test/123', function () {
             return 'abc123';
@@ -886,7 +912,7 @@ class RouterTest extends TestCase
     /** @test */
     public function canGetListOfRegisteredRoutes()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $route1 = $router->get('/test/123', function () {
         });
         $route2 = $router->get('/test/456', function () {
@@ -908,7 +934,7 @@ class RouterTest extends TestCase
             return 'abc123';
         });
 
-        $queryBuilder = new Router(new RouteCollector());
+        $queryBuilder = new Router(new RouteCollector(), $this->container);
 
         Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMacro());
         Assert::assertSame('abc123', Router::testFunctionAddedByMacro());
@@ -921,7 +947,7 @@ class RouterTest extends TestCase
     {
         Router::mixin(new RouterMixin());
 
-        $queryBuilder = new Router(new RouteCollector());
+        $queryBuilder = new Router(new RouteCollector(), $this->container);
 
         Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
     }
