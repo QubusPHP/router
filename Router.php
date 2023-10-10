@@ -33,6 +33,7 @@ use Qubus\Routing\Interfaces\Collector;
 use Qubus\Routing\Interfaces\Mappable;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
 use Qubus\Routing\Interfaces\Routable;
+use Qubus\Routing\Route\InjectorMiddlewareResolver;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
@@ -105,19 +106,19 @@ final class Router implements Mappable
 
     public function __construct(
         Collector $routeCollector,
-        ?ContainerInterface $container = null,
+        ContainerInterface $container,
         ?ResponseFactoryInterface $responseFactory = null,
         ?MiddlewareResolver $resolver = null
     ) {
-        if (isset($container)) {
-            $this->setContainer(container: $container);
-        }
+
+        $this->setContainer(container: $container);
+
         if (isset($responseFactory)) {
             $this->responseFactory = $responseFactory;
         }
-        if (isset($resolver)) {
-            $this->middlewareResolver = $resolver;
-        }
+
+        $this->middlewareResolver = $resolver ?? new InjectorMiddlewareResolver($container);
+
 
         $this->request = new Request();
         /**
