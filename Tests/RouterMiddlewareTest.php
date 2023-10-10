@@ -8,8 +8,17 @@ use Laminas\Diactoros\ServerRequest;
 use Mockery;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Qubus\Http\Request;
+use Qubus\Http\Response;
+use Qubus\Injector\Config\InjectorFactory;
+use Qubus\Injector\Injector;
+use Qubus\Injector\Psr11\Container;
+use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
@@ -19,11 +28,28 @@ use Qubus\Tests\Routing\Middlewares\AddHeaderMiddleware;
 
 class RouterMiddlewareTest extends TestCase
 {
+    private ContainerInterface $container;
+
+    public function setUp(): void
+    {
+        $this->container = new Container(InjectorFactory::create([
+            Injector::STANDARD_ALIASES => [
+                RequestInterface::class => Request::class,
+                ResponseInterface::class => Response::class,
+                ResponseFactoryInterface::class => ResponseFactory::class,
+                \Psr\Http\Message\ServerRequestInterface::class => \Laminas\Diactoros\ServerRequest::class,
+                \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
+                \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
+                    \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+            ],
+        ]));
+    }
+
     /** @test */
     public function canAddMiddlewareAsaClosureToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -49,7 +75,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddMiddlewareAsAnObjectToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $route    = $router->get('/test/123', function () use (&$count) {
@@ -69,7 +95,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddMultipleMiddlewareToaRouteInSuccessiveCalls()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $router->get('/test/123', function () {
         })
@@ -89,7 +115,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddMultipleMiddlewareToaRouteInaSingleCall()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $router->get('/test/123', function () {
         })->middleware(
@@ -110,7 +136,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddMultipleMiddlewareToaRouteAsAnArray()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
 
         $router->get('/test/123', function () {
         })->middleware([
@@ -131,7 +157,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddMiddlewareToaGroup()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['middleware' => [new AddHeaderMiddleware('X-Key', 'abc')]], function ($group) use (&$count) {
@@ -155,7 +181,7 @@ class RouterMiddlewareTest extends TestCase
     public function canAddSingleMiddlewareToaGroupWithoutWrappingInArray()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
-        $router  = new Router(new RouteCollector());
+        $router  = new Router(new RouteCollector(), $this->container);
         $count   = 0;
 
         $router->group(['middleware' => new AddHeaderMiddleware('X-Key', 'abc')], function ($group) use (&$count) {
@@ -178,7 +204,7 @@ class RouterMiddlewareTest extends TestCase
     /** @test */
     public function canAddBaseMiddlewareToBeAppliedToAllRoutes()
     {
-        $router = new Router(new RouteCollector());
+        $router = new Router(new RouteCollector(), $this->container);
         $router->setBaseMiddleware([
             new AddHeaderMiddleware('X-Key', 'abc'),
         ]);
@@ -215,7 +241,7 @@ class RouterMiddlewareTest extends TestCase
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
-        $router   = new Router(new RouteCollector(), null, null, $resolver);
+        $router   = new Router(new RouteCollector(), $this->container, null, $resolver);
 
         $router->get('/test/123', function () {
         })->middleware('middleware-key');
@@ -232,7 +258,7 @@ class RouterMiddlewareTest extends TestCase
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
-        $router   = new Router(new RouteCollector(), null, null, $resolver);
+        $router   = new Router(new RouteCollector(), $this->container, null, $resolver);
 
         $router->group(['middleware' => 'middleware-key'], function ($group) {
             $group->get('/test/123', function () {
@@ -251,7 +277,7 @@ class RouterMiddlewareTest extends TestCase
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
-        $router   = new Router(new RouteCollector(), null, null, $resolver);
+        $router   = new Router(new RouteCollector(), $this->container, null, $resolver);
         $router->setBaseMiddleware(['middleware-key']);
 
         $router->get('/test/123', function () {
