@@ -17,14 +17,14 @@ use Psr\Http\Server\MiddlewareInterface;
 
 final class ControllerMiddlewarePipe
 {
-    protected array|MiddlewareInterface $middleware;
+    protected array|MiddlewareInterface|string $middleware;
 
     protected ControllerMiddlewareOptions $options;
 
     /**
      * Constructor
      */
-    public function __construct(MiddlewareInterface|array $middleware, ControllerMiddlewareOptions $options)
+    public function __construct(MiddlewareInterface|array|string $middleware, ControllerMiddlewareOptions $options)
     {
         $this->middleware = $middleware;
         $this->options    = $options;
