@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Qubus\Tests\Routing;
 
+use Exception;
 use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Diactoros\ServerRequest;
 use PHPUnit\Framework\Assert;
@@ -50,7 +51,9 @@ class RouterTest extends TestCase
         ]));
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function mapReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -59,11 +62,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['GET'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['GET'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function mapAcceptsLowercaseVerbs()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -71,10 +76,12 @@ class RouterTest extends TestCase
         $route = $router->map(['get', 'head', 'post', 'put', 'patch', 'delete', 'options'], '/test/123', function () {
         });
 
-        Assert::assertSame(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route->getMethods());
+        Assert::assertSame(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $route->methods);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function getReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -83,11 +90,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['GET'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['GET'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function headReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -96,11 +105,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['HEAD'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['HEAD'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function postReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -109,11 +120,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['POST'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['POST'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function patchReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -122,11 +135,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['PATCH'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['PATCH'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function putReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -135,11 +150,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['PUT'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['PUT'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function deleteReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -148,11 +165,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['DELETE'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['DELETE'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function optionsReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -161,11 +180,13 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['OPTIONS'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['OPTIONS'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
     public function mapRemovesTrailingSlashFromUri()
     {
         $router = new Router(new RouteCollector(), $this->container);
@@ -174,11 +195,14 @@ class RouterTest extends TestCase
         });
 
         Assert::assertInstanceOf(Route::class, $route);
-        Assert::assertSame(['GET'], $route->getMethods());
-        Assert::assertSame('/test/123', $route->getUri());
+        Assert::assertSame(['GET'], $route->methods);
+        Assert::assertSame('/test/123', $route->uri);
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     * @throws Exception
+     */
     public function noReturnFromRouteActionResultsIna204StatusCode()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -194,7 +218,10 @@ class RouterTest extends TestCase
         Assert::assertSame(204, $response->getStatusCode());
     }
 
-    /** @test */
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     * @throws Exception
+     */
     public function leadingSlashIsOptionalWhenCreatingaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
@@ -918,7 +945,7 @@ class RouterTest extends TestCase
         $route2 = $router->get('/test/456', function () {
         });
 
-        $routes = $router->getRoutes();
+        $routes = $router->routes;
 
         Assert::assertCount(2, $routes);
         Assert::assertContains($route1, $routes);
@@ -955,7 +982,7 @@ class RouterTest extends TestCase
 
 class RouterMixin
 {
-    public function testFunctionAddedByMixin()
+    public function testFunctionAddedByMixin(): \Closure
     {
         return function () {
             return 'abc123';

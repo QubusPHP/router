@@ -21,61 +21,61 @@ class RoutingEventHandler implements EventHandler
     /**
      * Fires when a event is triggered.
      */
-    public const EVENT_ALL = '*';
+    public const string EVENT_ALL = '*';
 
     /**
      * Fires when router is initializing and before routes are loaded.
      */
-    public const EVENT_INIT = 'onInit';
+    public const string EVENT_INIT = 'onInit';
 
     /**
      * Fires when all routes have been loaded and rendered, just before the
      * output is returned.
      */
-    public const EVENT_LOAD = 'onLoad';
+    public const string EVENT_LOAD = 'onLoad';
 
     /**
      * Fires when route is added to the router
      */
-    public const EVENT_ADD_ROUTE = 'onAddRoute';
+    public const string EVENT_ADD_ROUTE = 'onAddRoute';
 
     /**
      * Fires when the router is booting. This happens just before boot-managers
      * are rendered and before any routes has been loaded.
      */
-    public const EVENT_BOOT = 'onBoot';
+    public const string EVENT_BOOT = 'onBoot';
 
     /**
      * Fires before a boot-manager is rendered.
      */
-    public const EVENT_RENDER_BOOTMANAGER = 'onRenderBootManager';
+    public const string EVENT_RENDER_BOOTMANAGER = 'onRenderBootManager';
 
     /**
      * Fires when the router is about to load all routes.
      */
-    public const EVENT_LOAD_ROUTES = 'onLoadRoutes';
+    public const string EVENT_LOAD_ROUTES = 'onLoadRoutes';
 
     /**
      * Fires whenever the `has` method is used.
      */
-    public const EVENT_FIND_ROUTE = 'onFindRoute';
+    public const string EVENT_FIND_ROUTE = 'onFindRoute';
 
     /**
      * Fires whenever the `Router::url` method is called and the router tries
      * to find the route.
      */
-    public const EVENT_GET_URL = 'onGetUrl';
+    public const string EVENT_GET_URL = 'onGetUrl';
 
     /**
      * Fires when a route is matched and valid (correct request-type etc).
      * and before the route is rendered.
      */
-    public const EVENT_MATCH_ROUTE = 'onMatchRoute';
+    public const string EVENT_MATCH_ROUTE = 'onMatchRoute';
 
     /**
      * Fires before a middleware is rendered.
      */
-    public const EVENT_RENDER_MIDDLEWARES = 'onRenderMiddlewares';
+    public const string EVENT_RENDER_MIDDLEWARES = 'onRenderMiddlewares';
 
     /**
      * All available events
@@ -124,7 +124,7 @@ class RoutingEventHandler implements EventHandler
      * @param string|null $name Filter events by name.
      * @param array       ...$names Add multiple names...
      */
-    public function getEvents(?string $name, ...$names): array
+    public function getEvents(?string $name = null, ...$names): array
     {
         if ($name === null) {
             return $this->registeredEvents;

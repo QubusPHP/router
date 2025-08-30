@@ -21,7 +21,6 @@ use function array_intersect;
 use function array_map;
 use function array_merge;
 use function array_slice;
-use function compact;
 use function end;
 use function explode;
 use function implode;
@@ -80,7 +79,7 @@ class RouteResource
          * set that up out of the box so they don't have to mess with it.
          * Otherwise, we will continue.
          */
-        if (strpos(haystack: $name, needle: '/') !== false) {
+        if (str_contains($name, '/')) {
             return $this->prefixedResource(name: $name, controller: $controller, options: $options);
         }
 
@@ -119,7 +118,7 @@ class RouteResource
             $me->resource($name, $controller, $options);
         };
 
-        $compact = compact(var_name: 'prefix');
+        $compact = ['prefix' => $prefix];
 
         return $this->router->group(params: $compact, callback: $callback);
     }
@@ -293,10 +292,8 @@ class RouteResource
         /**
          * If a global prefix has been assigned to all names for this resource,
          * we will grab that so we can prepend it onto the name when we create
-         * this name for the resource action. Otherwise we'll just use an empty
+         * this name for the resource action. Otherwise, we'll just use an empty
          * string for here.
-         *
-         * @var string
          */
         $prefix = isset($options['alias']) ? $options['alias'] . '.' : '';
 

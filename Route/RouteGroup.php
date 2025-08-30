@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Qubus\Routing\Route;
 
+use Qubus\Inheritance\MacroAware;
 use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Interfaces\Mappable;
 use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Router;
 use Qubus\Routing\Traits\RouteMapper;
-use Spatie\Macroable\Macroable;
 
 use function call_user_func;
 use function is_array;
@@ -28,7 +28,7 @@ use function trim;
 
 class RouteGroup implements Mappable
 {
-    use Macroable;
+    use MacroAware;
     use RouteMapper;
 
     protected Router $router;

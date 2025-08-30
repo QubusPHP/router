@@ -15,7 +15,6 @@ namespace Qubus\Routing;
 
 use Exception as PHPException;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -23,6 +22,7 @@ use Qubus\Exception\Data\TypeException;
 use Qubus\Exception\Exception;
 use Qubus\Http\Factories\JsonResponseFactory;
 use Qubus\Http\Request;
+use Qubus\Inheritance\MacroAware;
 use Qubus\Routing\Events\EventHandler;
 use Qubus\Routing\Events\RoutingEventHandler;
 use Qubus\Routing\Exceptions\NamedRouteNotFoundException;
@@ -41,7 +41,6 @@ use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Route\RouteResource;
 use Qubus\Routing\Traits\RouteMapper;
 use Relay\Relay;
-use Spatie\Macroable\Macroable;
 
 use function array_diff;
 use function array_filter;
@@ -55,23 +54,27 @@ use function json_decode;
 use function ltrim;
 use function preg_match;
 use function preg_match_all;
+use function str_ends_with;
 use function str_replace;
-use function substr;
 use function trim;
 
 use const JSON_PRETTY_PRINT;
 
 final class Router implements Mappable
 {
-    use Macroable;
+    use MacroAware;
     use RouteMapper;
 
-    protected Request $request;
+    public Request $request {
+        get => $this->request;
+    }
 
-    public string $version = '2.0.0';
+    public string $version = '4.0.0';
 
     /** @var array $routes */
-    protected array $routes = [];
+    public array $routes = [] {
+        &get => $this->routes;
+    }
 
     protected Collector $routeCollector;
 
@@ -92,7 +95,9 @@ final class Router implements Mappable
     protected ?Invoker $invoker = null;
 
     /** @var array $baseMiddleware */
-    protected array $baseMiddleware = [];
+    public array $baseMiddleware = [] {
+        set(array $value) => $this->baseMiddleware = $value;
+    }
 
     protected ?string $defaultNamespace = null;
 
@@ -130,7 +135,7 @@ final class Router implements Mappable
 
     public function prependUrl(string $url): void
     {
-        $this->routeCollector->setBasePath(basePath: $url);
+        $this->routeCollector->basePath = $url;
     }
 
     /**
@@ -154,8 +159,6 @@ final class Router implements Mappable
         $this->basePath = Formatting::addLeadingSlash(input: Formatting::addTrailingSlash(input: $basePath));
         /**
          * Force the router to rebuild next time we need it.
-         *
-         * @var bool
          */
         $this->routesCreated = false;
     }
@@ -191,17 +194,17 @@ final class Router implements Mappable
         Routable $route,
         RouteCollector $routeCollector
     ): string {
-        $output = $route->getUri();
+        $output = $route->uri;
 
-        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', $route->getUri(), $matches);
+        preg_match_all('/{\s*([a-zA-Z0-9]+\??)\s*}/s', $route->uri, $matches);
 
-        $paramConstraints = $route->getParamConstraints();
+        $paramConstraints = $route->paramConstraints;
 
         for ($i = 0; $i < count($matches[0]); $i++) {
             $match    = $matches[0][$i];
             $paramKey = $matches[1][$i];
 
-            $optional = substr(string: $paramKey, offset: -1) === '?';
+            $optional = str_ends_with($paramKey, '?');
             $paramKey = trim(string: $paramKey, characters: '?');
 
             $regex       = $paramConstraints[$paramKey] ?? null;
@@ -283,10 +286,12 @@ final class Router implements Mappable
     /**
      * Route an API resource to a controller.
      *
-     * @param  string $name
-     * @param  string $controller
+     * @param string $name
+     * @param string $controller
+     * @param array $options
+     * @return Routable
      */
-    public function apiResource($name, $controller, array $options = []): Routable
+    public function apiResource(string $name, string $controller, array $options = []): Routable
     {
         $only = ['index', 'show', 'store', 'update', 'destroy'];
 
@@ -355,7 +360,7 @@ final class Router implements Mappable
             return;
         }
 
-        $this->routeCollector->setBasePath(basePath: $this->basePath);
+        $this->routeCollector->basePath = $this->basePath;
 
         $this->fireEvents(name: RoutingEventHandler::EVENT_BOOT, arguments: [
             'bootmanagers' => $this->bootManagers,
@@ -380,7 +385,7 @@ final class Router implements Mappable
 
         foreach ($this->routes as $route) {
             $uri = $this->convertRouteToRouteCollectorRouterUri(route: $route, routeCollector: $this->routeCollector);
-            $this->routeCollector->setDomain(domain: $route->getDomain());
+            $this->routeCollector = $route->getDomain();
             /**
              * Canonical URI with trailing slash - becomes named route
              * if name is provided
@@ -404,7 +409,7 @@ final class Router implements Mappable
         }
 
         $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
-            'loadedRoutes' => $this->getRoutes(),
+            'loadedRoutes' => $this->routes,
         ]);
     }
 
@@ -480,8 +485,6 @@ final class Router implements Mappable
         ]);
         /**
          * Create and process the dispatcher.
-         *
-         * @var Relay $dispatcher
          */
         $dispatcher = new Relay(queue: $middlewares, resolver: function ($name) {
             if (! isset($this->middlewareResolver)) {
@@ -614,21 +617,13 @@ final class Router implements Mappable
     }
 
     /**
-     * Set global middleware.
-     */
-    public function setBaseMiddleware(array $middleware): void
-    {
-        $this->baseMiddleware = $middleware;
-    }
-
-    /**
      * Get the basepath.
      *
      * @return string The basepath.
      */
     public function getBasePath(): string
     {
-        return $this->basePath ?? $this->routeCollector->getBasePath();
+        return $this->basePath ?? $this->routeCollector->basePath;
     }
 
     /**
@@ -648,29 +643,13 @@ final class Router implements Mappable
      */
     public function currentRouteName(): ?string
     {
-        return $this->currentRoute?->getName();
-    }
-
-    /**
-     * Get routes.
-     */
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
-    /**
-     * Get current request
-     */
-    public function getRequest(): RequestInterface
-    {
-        return $this->request;
+        return $this->currentRoute->name;
     }
 
     /**
      * Register event handler
      */
-    public function addEventHandler(EventHandler $handler): void
+    public function setEventHandlers(EventHandler $handler): void
     {
         $this->eventHandlers[] = $handler;
     }

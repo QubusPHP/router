@@ -253,7 +253,7 @@ class RouteAction
      */
     private function resolveController(array|callable|object|string $controller): array|callable|object|string
     {
-        if (null !== $this->namespace && (is_string(value: $controller) || ! $controller instanceof Closure)) {
+        if (null !== $this->namespace && (! $controller instanceof Closure)) {
             if (
                 is_string(value: $controller) &&
                 ! class_exists(class: $controller) &&

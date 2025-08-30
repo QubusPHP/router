@@ -17,10 +17,7 @@ use RuntimeException;
 
 interface Collector
 {
-    /**
-     * Get route objects.
-     */
-    public function getRoutes(): array;
+    public array $routes { get; }
 
     /**
      * Add multiple routes at once from array using the following format:
@@ -33,19 +30,9 @@ interface Collector
      */
     public function addRoutes(array $routes): void;
 
-    /**
-     * Set the base path.
-     *
-     * Useful if you are running your application from a subdirectory.
-     */
-    public function setBasePath(string $basePath): void;
+    public string $basePath { set; }
 
-    /**
-     * Set the domain.
-     *
-     * Useful for api routing.
-     */
-    public function setDomain(string $domain): void;
+    public string $domain { set; }
 
     /**
      * Map a route to a target

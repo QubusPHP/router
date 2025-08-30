@@ -25,12 +25,18 @@ class RoutingEventArgument implements EventArgument
     /**
      * Event name
      */
-    protected string $eventName;
+    public string $eventName {
+        get => $this->eventName;
+    }
 
-    protected Router $router;
+    public Router $router {
+        get => $this->router;
+    }
 
     /** @var array $arguments */
-    protected array $arguments = [];
+    public array $arguments = [] {
+        get => $this->arguments;
+    }
 
     public function __construct(string $eventName, Router $router, array $arguments = [])
     {
@@ -40,35 +46,11 @@ class RoutingEventArgument implements EventArgument
     }
 
     /**
-     * Get event name
-     */
-    public function getEventName(): string
-    {
-        return $this->eventName;
-    }
-
-    /**
-     * Set the event name
-     */
-    public function setEventName(string $name): void
-    {
-        $this->eventName = $name;
-    }
-
-    /**
-     * Get the router instance
-     */
-    public function getRouter(): Router
-    {
-        return $this->router;
-    }
-
-    /**
      * Get the request instance.
      */
     public function getRequest(): Request|RequestInterface
     {
-        return $this->getRouter()->getRequest();
+        return $this->router->request;
     }
 
     public function __get(string $name): mixed
@@ -87,13 +69,5 @@ class RoutingEventArgument implements EventArgument
     public function __set(string $name, mixed $value)
     {
         throw new TypeException('Not supported');
-    }
-
-    /**
-     * Get arguments
-     */
-    public function getArguments(): array
-    {
-        return $this->arguments;
     }
 }
