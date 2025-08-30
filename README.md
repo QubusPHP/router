@@ -19,7 +19,7 @@ Qubus router is a powerful and fast PHP router for PSR-7/PSR-15 messages.
 * and more . . .
 
 ## Requirements
-* PHP 8.2+
+* PHP 8.4+
 
 ## Installation
 
