@@ -205,9 +205,9 @@ class RouterMiddlewareTest extends TestCase
     public function canAddBaseMiddlewareToBeAppliedToAllRoutes()
     {
         $router = new Router(new RouteCollector(), $this->container);
-        $router->setBaseMiddleware([
-            new AddHeaderMiddleware('X-Key', 'abc'),
-        ]);
+        $router->baseMiddleware = [
+                new AddHeaderMiddleware('X-Key', 'abc'),
+        ];
         $count = 0;
 
         $router->get('one', function () use (&$count) {
@@ -278,7 +278,7 @@ class RouterMiddlewareTest extends TestCase
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
         $router   = new Router(new RouteCollector(), $this->container, null, $resolver);
-        $router->setBaseMiddleware(['middleware-key']);
+        $router->baseMiddleware = ['middleware-key'];
 
         $router->get('/test/123', function () {
         });

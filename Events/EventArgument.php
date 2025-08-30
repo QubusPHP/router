@@ -19,28 +19,14 @@ use Qubus\Routing\Router;
 
 interface EventArgument
 {
-    /**
-     * Get event name.
-     */
-    public function getEventName(): string;
+    public string $eventName { get; }
 
-    /**
-     * Set event name.
-     */
-    public function setEventName(string $name): void;
-
-    /**
-     * Get router instance.
-     */
-    public function getRouter(): Router;
+    public Router $router { get; }
 
     /**
      * Get request instance.
      */
     public function getRequest(): Request|RequestInterface;
 
-    /**
-     * Get all event arguments.
-     */
-    public function getArguments(): array;
+    public array $arguments { get; }
 }

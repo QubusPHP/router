@@ -23,7 +23,9 @@ use function array_diff_key;
 
 final class TypeHintRequestResolver implements ParameterResolver
 {
-    protected ServerRequestInterface $request;
+    public ServerRequestInterface $request {
+        set(ServerRequestInterface $value) => $this->request = $value;
+    }
 
     /**
      * @throws ReflectionException
@@ -78,10 +80,5 @@ final class TypeHintRequestResolver implements ParameterResolver
             $this->request->getParsedBody(),
             $this->request->getProtocolVersion()
         );
-    }
-
-    public function setRequest(ServerRequestInterface $request): void
-    {
-        $this->request = $request;
     }
 }

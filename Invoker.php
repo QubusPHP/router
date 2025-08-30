@@ -30,8 +30,6 @@ final class Invoker extends DIInvoker
 
         /**
          * Allow the invoker to resolve dependencies via Type Hinting.
-         *
-         * @var ContainerInterface $container
          */
         $containerResolver = new TypeHintContainerResolver($container);
         $resolver->prependResolver(resolver: $containerResolver);
@@ -42,7 +40,7 @@ final class Invoker extends DIInvoker
 
     public function setRequest(ServerRequestInterface $request): self
     {
-        $this->requestResolver->setRequest(request: $request);
+        $this->requestResolver->request = $request;
 
         return $this;
     }

@@ -38,18 +38,25 @@ use const PREG_SET_ORDER;
 class RouteCollector implements Collector
 {
     /** @var array Array of all routes (incl. named routes). */
-    protected array $routes = [];
+    public array $routes = [] {
+        &get => $this->routes;
+    }
     /** @var array Array of all named routes. */
     protected array $namedRoutes = [];
-    /** @var string domain */
-    protected string $domain = '';
-    /** @var string subdomain */
-    protected string $subdomain = '';
+    /** @var ?string domain */
+    public ?string $domain = null {
+        set(?string $value) => $this->domain = $value;
+    }
+    /** @var ?string subdomain */
+    protected ?string $subdomain = null;
     /**
      * @var string Can be used to ignore leading part of the Request
      * URL (if main file lives in subdirectory of host)
      */
-    protected string $basePath = '';
+    public string $basePath = '' {
+        get => $this->basePath;
+        set(string $value) => $this->basePath = $value;
+    }
     /** @var array Array of default match types (regex helpers) */
     protected array $matchTypes = [
         'i'  => '[0-9]++',
@@ -70,20 +77,8 @@ class RouteCollector implements Collector
     public function __construct(array $routes = [], string $basePath = '', array $matchTypes = [])
     {
         $this->addRoutes($routes);
-        $this->setBasePath($basePath);
+        $this->basePath = $basePath;
         $this->addMatchTypes($matchTypes);
-    }
-
-    /**
-     * Retrieves all routes.
-     *
-     * Useful if you want to process or display routes.
-     *
-     * @return array All routes.
-     */
-    public function getRoutes(): array
-    {
-        return $this->routes;
     }
 
     /**
@@ -97,32 +92,9 @@ class RouteCollector implements Collector
      */
     public function addRoutes(array $routes): void
     {
-        if (! is_array(value: $routes) && ! $routes instanceof Traversable) {
-            throw new RuntimeException(message: 'Routes should be an array or an instance of Traversable');
-        }
         foreach ($routes as $route) {
             call_user_func_array(callback: [$this, 'map'], args: $route);
         }
-    }
-
-    /**
-     * Set the base path.
-     *
-     * Useful if you are running your application from a subdirectory.
-     */
-    public function setBasePath(string $basePath): void
-    {
-        $this->basePath = $basePath;
-    }
-
-    /**
-     * Set the domain.
-     *
-     * Useful for api routing.
-     */
-    public function setDomain(string $domain): void
-    {
-        $this->domain = $domain;
     }
 
     /**
@@ -192,9 +164,7 @@ class RouteCollector implements Collector
         /**
          * Prepend domain/subdomain if set.
          */
-        if (null !== $domain) {
-            $url = $domain . $url;
-        }
+        $url = $domain . $url;
 
         if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $index => $match) {
@@ -234,7 +204,7 @@ class RouteCollector implements Collector
         /**
          * Set Request Host if it isn't passed as parameter.
          */
-        if (null !== $this->domain && null === $requestHost) {
+        if (null === $requestHost) {
             if (! isset($_SERVER['HTTP_HOST'])) {
                 throw new Exception(message: 'Subdomain matching active but no host is specified.');
             }
@@ -284,16 +254,12 @@ class RouteCollector implements Collector
             }
             /**
              * '*' wildcard (matches all)
-             *
-             * @var string
              */
             if ($route === '*') {
                 $match = true;
             } elseif (isset($route[0]) && $route[0] === '@') {
                 /**
                  * @ regex delimiter
-                 *
-                 * @var string
                  */
                 $pattern = '`' . substr(string: $route, offset: 1) . '`u';
                 $match   = preg_match($pattern, $requestUrl, $params) === 1;
@@ -338,11 +304,6 @@ class RouteCollector implements Collector
         return false;
     }
 
-    public function getBasePath(): string
-    {
-        return $this->basePath;
-    }
-
     /**
      * Adds a path at the beginning of a url.
      *
@@ -350,7 +311,7 @@ class RouteCollector implements Collector
      */
     public function prependUrl(string $basePath): void
     {
-        $this->setBasePath($basePath);
+        $this->basePath = $basePath;
     }
 
     /**
@@ -377,8 +338,6 @@ class RouteCollector implements Collector
 
                 /**
                  * Older versions of PCRE require the 'P' in (?P<named>).
-                 *
-                 * @var string
                  */
                 $pattern = '(?:'
                 . ($pre !== '' ? $pre : null)

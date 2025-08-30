@@ -22,7 +22,7 @@ interface EventHandler
      *
      * @param string|null $name Filter events by name.
      */
-    public function getEvents(?string $name): array;
+    public function getEvents(?string $name = null): array;
 
     /**
      * Fires any events registered with given event-name.

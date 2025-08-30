@@ -16,14 +16,13 @@ namespace Qubus\Routing\Route;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Qubus\Exception\Data\TypeException;
-use Qubus\Routing\Controller\InjectorMiddlewareResolver;
+use Qubus\Inheritance\MacroAware;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
 use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Interfaces\MiddlewareResolver;
 use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Invoker;
 use Relay\Relay;
-use Spatie\Macroable\Macroable;
 
 use function array_merge;
 use function count;
@@ -36,19 +35,30 @@ use function trim;
 
 final class Route implements Routable
 {
-    use Macroable;
+    use MacroAware;
 
-    protected string $uri = '';
-    protected array $methods = [];
+    public string $uri = '' {
+        get => $this->uri;
+        set(string $value) => $this->uri = rtrim(string: $value, characters: ' /');
+    }
+    public array $methods = [] {
+        get => $this->methods;
+    }
     protected RouteAction $routeAction;
-    protected ?string $name = null;
+    public ?string $name = null {
+        get => $this->name;
+    }
     protected ?string $domain = null;
     protected ?string $subDomain = null;
-    protected array $schemes = [];
+    protected array $schemes = [] {
+        &get => $this->schemes;
+    }
     protected ?Invoker $invoker = null;
     protected ?MiddlewareResolver $middlewareResolver = null;
     protected array $middlewares = [];
-    protected array $paramConstraints = [];
+    public array $paramConstraints = [] {
+        &get => $this->paramConstraints;
+    }
     protected ?string $defaultNamespace = null;
     protected ?string $namespace = null;
 
@@ -64,13 +74,8 @@ final class Route implements Routable
         $this->invoker            = $invoker;
         $this->middlewareResolver = $middlewareResolver;
         $this->methods            = $methods;
-        $this->setUri(uri: $uri);
+        $this->uri = $uri;
         $this->setAction(action: $action);
-    }
-
-    protected function setUri(string $uri): void
-    {
-        $this->uri = rtrim(string: $uri, characters: ' /');
     }
 
     protected function setAction(mixed $action): void
@@ -87,7 +92,7 @@ final class Route implements Routable
      */
     public function prependUrl(string $uri): void
     {
-        $this->setUri(uri: rtrim(string: $uri, characters: '/') . $this->uri);
+        $this->uri = rtrim(string: $uri, characters: '/') . $this->uri;
     }
 
     public function handle(ServerRequestInterface $request, RouteParams $params): ResponseInterface
@@ -119,16 +124,6 @@ final class Route implements Routable
     public function gatherMiddlewares(): array
     {
         return array_merge([], $this->middlewares, $this->routeAction->getMiddlewares());
-    }
-
-    public function getUri(): string
-    {
-        return $this->uri;
-    }
-
-    public function getMethods(): array
-    {
-        return $this->methods;
     }
 
     /**
@@ -183,11 +178,6 @@ final class Route implements Routable
         return $this;
     }
 
-    public function getSchemes(): array
-    {
-        return $this->schemes;
-    }
-
     public function setScheme(string ...$schemes): self
     {
         foreach ($schemes as $scheme) {
@@ -215,11 +205,6 @@ final class Route implements Routable
         return $this;
     }
 
-    public function getParamConstraints(): array
-    {
-        return $this->paramConstraints;
-    }
-
     public function middleware(): Routable
     {
         $args = func_get_args();
@@ -231,11 +216,6 @@ final class Route implements Routable
             }
         }
         return $this;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
     }
 
     public function getDomain(): ?string

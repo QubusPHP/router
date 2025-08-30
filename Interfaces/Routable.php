@@ -23,9 +23,9 @@ interface Routable
 
     public function gatherMiddlewares(): array;
 
-    public function getUri(): string;
+    public string $uri { get; }
 
-    public function getMethods(): array;
+    public array $methods { get; }
 
     public function name(?string $name): self;
 
@@ -35,7 +35,7 @@ interface Routable
 
     public function middleware(): self;
 
-    public function getName(): ?string;
+    public null|string $name { get; }
 
     public function getDomain(): ?string;
 

@@ -201,7 +201,7 @@ class ControllerTest extends TestCase
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
     }
 
-    protected function assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods)
+    protected function assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods): void
     {
         $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
         // Add the routes

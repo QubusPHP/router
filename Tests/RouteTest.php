@@ -17,10 +17,12 @@ use Qubus\Injector\Config\InjectorFactory;
 use Qubus\Injector\Injector;
 use Qubus\Injector\Psr11\Container;
 use Qubus\Routing\Exceptions\RouteNameRedefinedException;
+use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
+use ReflectionException;
 
 class RouteTest extends TestCase
 {
@@ -41,8 +43,10 @@ class RouteTest extends TestCase
         ]));
     }
 
-    /** @test */
-    public function aRouteCanBeNamed()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testaRouteCanBeNamed()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -53,7 +57,7 @@ class RouteTest extends TestCase
     }
 
     /** @test */
-    public function nameFunctionIsChainable()
+    public function testNameFunctionIsChainable()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -61,8 +65,10 @@ class RouteTest extends TestCase
         })->name('test'));
     }
 
-    /** @test */
-    public function aRouteCannotBeRenamed()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testaRouteCannotBeRenamed()
     {
         $this->expectException(RouteNameRedefinedException::class);
 
@@ -72,8 +78,10 @@ class RouteTest extends TestCase
         })->name('test1')->name('test2');
     }
 
-    /** @test */
-    public function whereFunctionIsChainable()
+    /** @test
+     * @throws TypeException
+     */
+    public function testWhereFunctionIsChainable()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -81,8 +89,10 @@ class RouteTest extends TestCase
         })->where('id', '[0-9]+'));
     }
 
-    /** @test */
-    public function whereFunctionIsChainableWhenPassedAnArray()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testWhereFunctionIsChainableWhenPassedAnArray()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -91,7 +101,7 @@ class RouteTest extends TestCase
     }
 
     /** @test */
-    public function whereFunctionThrowsExceptionWhenNoParamsProvided()
+    public function testWhereFunctionThrowsExceptionWhenNoParamsProvided()
     {
         $this->expectException(TypeException::class);
 
@@ -101,8 +111,10 @@ class RouteTest extends TestCase
         })->where());
     }
 
-    /** @test */
-    public function canGetRouteActionNameWhenClosure()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testCanGetRouteActionNameWhenClosure()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', function () {
@@ -111,8 +123,10 @@ class RouteTest extends TestCase
         Assert::assertSame('Closure', $route->getActionName());
     }
 
-    /** @test */
-    public function canGetRouteActionNameWhenCallable()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testCanGetRouteActionNameWhenCallable()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', [TestCallableController::class, 'testStatic']);
@@ -120,8 +134,10 @@ class RouteTest extends TestCase
         Assert::assertSame(TestCallableController::class . '@testStatic', $route->getActionName());
     }
 
-    /** @test */
-    public function canGetRouteActionNameWhenCallableInstance()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testCanGetRouteActionNameWhenCallableInstance()
     {
         $router     = new Router(new RouteCollector(), $this->container);
         $controller = new TestCallableController();
@@ -130,8 +146,10 @@ class RouteTest extends TestCase
         Assert::assertSame(TestCallableController::class . '@test', $route->getActionName());
     }
 
-    /** @test */
-    public function canGetRouteActionNameWhenControllerString()
+    /** @test
+     * @throws TooLateToAddNewRouteException
+     */
+    public function testCanGetRouteActionNameWhenControllerString()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $route  = $router->get('test/123', TestCallableController::class . '@test');
@@ -142,7 +160,7 @@ class RouteTest extends TestCase
     /**
      * @test
      */
-    public function canExtendPostBehaviorWithMacros()
+    public function testCanExtendPostBehaviorWithMacros()
     {
         Route::macro('testFunctionAddedByMacro', function () {
             return 'abc123';
@@ -157,8 +175,9 @@ class RouteTest extends TestCase
 
     /**
      * @test
+     * @throws ReflectionException
      */
-    public function canExtendPostBehaviorWithMixin()
+    public function testCanExtendPostBehaviorWithMixin()
     {
         Route::mixin(new RouteMixin());
 
@@ -182,7 +201,7 @@ class TestCallableController
 
 class RouteMixin
 {
-    public function testFunctionAddedByMixin()
+    public function testFunctionAddedByMixin(): \Closure
     {
         return function () {
             return 'abc123';
