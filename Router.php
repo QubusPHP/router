@@ -385,7 +385,7 @@ final class Router implements Mappable
 
         foreach ($this->routes as $route) {
             $uri = $this->convertRouteToRouteCollectorRouterUri(route: $route, routeCollector: $this->routeCollector);
-            $this->routeCollector = $route->getDomain();
+            $this->routeCollector->domain = $route->getDomain();
             /**
              * Canonical URI with trailing slash - becomes named route
              * if name is provided
