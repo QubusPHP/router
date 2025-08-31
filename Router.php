@@ -69,7 +69,7 @@ final class Router implements Mappable
         get => $this->request;
     }
 
-    public string $version = '4.0.0';
+    public string $version = '4.0.3';
 
     /** @var array $routes */
     public array $routes = [] {
