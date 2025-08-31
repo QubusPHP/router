@@ -547,7 +547,7 @@ final class Router implements Mappable
             }
         }
         if ($matchedRoute) {
-            $paramConstraints = $matchedRoute->getParamConstraints();
+            $paramConstraints = $matchedRoute->paramConstraints;
 
             foreach ($params as $key => $value) {
                 $regex = $paramConstraints[$key] ?? false;
