@@ -391,17 +391,17 @@ final class Router implements Mappable
              * if name is provided
              */
             $this->routeCollector->map(
-                implode(separator: '|', array: $route->getMethods()),
+                implode(separator: '|', array: $route->methods),
                 $route->getSubDomain() ?? null,
                 Formatting::addTrailingSlash($uri),
                 $route,
-                $route->getName() ?? null
+                $route->name ?? null
             );
             /**
              * Also register URI without trailing slash
              */
             $this->routeCollector->map(
-                implode(separator: '|', array: $route->getMethods()),
+                implode(separator: '|', array: $route->methods),
                 $route->getSubDomain() ?? null,
                 Formatting::removeTrailingSlash($uri),
                 $route
@@ -519,7 +519,7 @@ final class Router implements Mappable
         ]);
 
         $routes = array_filter(array: $this->routes, callback: function ($route) use ($name) {
-            return $route->getName() === $name;
+            return $route->name === $name;
         });
         return count($routes) > 0;
     }
@@ -542,7 +542,7 @@ final class Router implements Mappable
          */
         $matchedRoute = null;
         foreach ($this->routes as $route) {
-            if ($route->getName() === $name) {
+            if ($route->name === $name) {
                 $matchedRoute = $route;
             }
         }
