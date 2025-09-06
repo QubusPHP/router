@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Qubus\Routing;
 
-use Exception as PHPException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -60,20 +59,20 @@ use function trim;
 
 use const JSON_PRETTY_PRINT;
 
-final class Router implements Mappable
+final class Router implements Psr7Router, Mappable
 {
     use MacroAware;
     use RouteMapper;
 
     public Request $request {
-        get => $this->request;
+    get => $this->request;
     }
 
-    public string $version = '4.0.3';
+    public string $version = '4.0.4';
 
     /** @var array $routes */
     public array $routes = [] {
-        &get => $this->routes;
+    & get => $this->routes;
     }
 
     protected Collector $routeCollector;
@@ -96,7 +95,7 @@ final class Router implements Mappable
 
     /** @var array $baseMiddleware */
     public array $baseMiddleware = [] {
-        set(array $value) => $this->baseMiddleware = $value;
+    set(array $value) => $this->baseMiddleware = $value;
     }
 
     protected ?string $defaultNamespace = null;
@@ -414,8 +413,7 @@ final class Router implements Mappable
     }
 
     /**
-     * @return mixed
-     * @throws PHPException
+     * {@inheritDoc}
      */
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
@@ -507,10 +505,7 @@ final class Router implements Mappable
     }
 
     /**
-     * Check if a route exists based on its name.
-     *
-     * @param  string $name The name of the route.
-     * @return bool True if the named routed exists, false otherwise.
+     * {@inheritDoc}
      */
     public function has(string $name): bool
     {
@@ -525,13 +520,7 @@ final class Router implements Mappable
     }
 
     /**
-     * Generate url's from named routes.
-     *
-     * @param  string $name   Name of the route.
-     * @param  array  $params Data parameters.
-     * @return string The url.
-     * @throws RouteParamFailedConstraintException
-     * @throws NamedRouteNotFoundException
+     * {@inheritDoc}
      */
     public function url(string $name, array $params = []): string
     {
@@ -575,13 +564,7 @@ final class Router implements Mappable
     }
 
     /**
-     * Redirect one route to another.
-     *
-     * @param string $from Originating route.
-     * @param string $to Destination route.
-     * @param int $status HTTP status code.
-     * @return Routable
-     * @throws TooLateToAddNewRouteException
+     * {@inheritDoc}
      */
     public function redirect(string $from, string $to, int $status = 302): Routable
     {
