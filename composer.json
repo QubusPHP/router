@@ -22,7 +22,7 @@
         "qubus/http": "^4",
         "qubus/inheritance": "^3.0",
         "qubus/injector": "^3",
-        "relay/relay": "^2"
+        "relay/relay": "^3"
     },
     "require-dev": {
         "mockery/mockery": "^1",
