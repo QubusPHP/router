@@ -64,20 +64,23 @@ final class Router implements Psr7Router, Mappable
     use MacroAware;
     use RouteMapper;
 
+    //phpcs:disable
     public Request $request {
-    get => $this->request;
+        get => $this->request;
     }
 
-    public string $version = '4.0.4';
+    public string $version = '4.0.5';
 
     /** @var array $routes */
     public array $routes = [] {
-    & get => $this->routes;
+        &get => $this->routes;
     }
 
     protected Collector $routeCollector;
 
-    protected bool $routesCreated = false;
+    protected bool $routesCreated = false {
+        set(bool $value) => $this->routesCreated = $value;
+    }
 
     protected int $routeCollectorMatchTypeId = 1;
 
@@ -95,7 +98,7 @@ final class Router implements Psr7Router, Mappable
 
     /** @var array $baseMiddleware */
     public array $baseMiddleware = [] {
-    set(array $value) => $this->baseMiddleware = $value;
+        set(array $value) => $this->baseMiddleware = $value;
     }
 
     protected ?string $defaultNamespace = null;
@@ -107,6 +110,7 @@ final class Router implements Psr7Router, Mappable
 
     /** @var array $eventHandlers */
     protected array $eventHandlers = [];
+    //phpcs:enable
 
     public function __construct(
         Collector $routeCollector,
