@@ -31,11 +31,11 @@ class RouteGroup implements Mappable
     use MacroAware;
     use RouteMapper;
 
-    protected Router $router;
-    protected string $prefix;
-    protected string $domain;
-    protected string $subDomain;
-    protected string $namespace;
+    protected ?Router $router = null;
+    protected string $prefix = '';
+    protected string $domain = '';
+    protected string $subDomain = '';
+    protected string $namespace = '';
     protected array $middlewares = [];
 
     public function __construct(string|array $params, Router $router)
