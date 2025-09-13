@@ -16,7 +16,7 @@ namespace Qubus\Routing\Traits;
 use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Interfaces\Routable;
 
-trait RouteMapper
+trait RouteMapperAware
 {
     /**
      * Add a route to the map.
