@@ -18,7 +18,7 @@ use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Interfaces\Mappable;
 use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Router;
-use Qubus\Routing\Traits\RouteMapper;
+use Qubus\Routing\Traits\RouteMapperAware;
 
 use function call_user_func;
 use function is_array;
@@ -29,7 +29,7 @@ use function trim;
 class RouteGroup implements Mappable
 {
     use MacroAware;
-    use RouteMapper;
+    use RouteMapperAware;
 
     protected ?Router $router = null;
     protected string $prefix = '';
