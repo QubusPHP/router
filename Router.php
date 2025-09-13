@@ -17,6 +17,8 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Qubus\Exception\Data\TypeException;
 use Qubus\Exception\Exception;
 use Qubus\Http\Factories\JsonResponseFactory;
@@ -38,7 +40,7 @@ use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
 use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Route\RouteResource;
-use Qubus\Routing\Traits\RouteMapper;
+use Qubus\Routing\Traits\RouteMapperAware;
 use Relay\Relay;
 
 use function array_diff;
@@ -59,17 +61,17 @@ use function trim;
 
 use const JSON_PRETTY_PRINT;
 
-final class Router implements Psr7Router, Mappable
+class Router implements Psr7Router, Mappable, MiddlewareInterface
 {
     use MacroAware;
-    use RouteMapper;
+    use RouteMapperAware;
 
     //phpcs:disable
     public Request $request {
         get => $this->request;
     }
 
-    public string $version = '4.0.5';
+    public string $version = '4.0.6';
 
     /** @var array $routes */
     public array $routes = [] {
@@ -126,7 +128,6 @@ final class Router implements Psr7Router, Mappable
         }
 
         $this->middlewareResolver = $resolver ?? new InjectorMiddlewareResolver($container);
-
 
         $this->request = new Request();
         /**
@@ -418,6 +419,7 @@ final class Router implements Psr7Router, Mappable
 
     /**
      * {@inheritDoc}
+     * @throws \Exception
      */
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
@@ -698,5 +700,20 @@ final class Router implements Psr7Router, Mappable
         if (! empty($extras['where'])) {
             $route->where(...$extras['where']);
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $request = $request->withAttribute(self::class, $this->currentRoute);
+        $response = $this->match($request);
+
+        if ($response instanceof JsonResponseFactory) {
+            return $handler->handle($request->withAttribute(self::class, 'Not Found'));
+        }
+
+        return $response;
     }
 }
