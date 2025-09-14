@@ -16,7 +16,7 @@ class TypeHintRequestResolverTest extends TestCase
     /** @test
      * @throws ReflectionException
      */
-    public function returnsResolvedParametersWhenNoRequestIsSet()
+    public function testReturnsResolvedParametersWhenNoRequestIsSet()
     {
         $reflectionFunction = new ReflectionFunction(function () {
         });
@@ -31,7 +31,7 @@ class TypeHintRequestResolverTest extends TestCase
     /** @test
      * @throws ReflectionException
      */
-    public function canResolveaRequest()
+    public function testCanResolveaRequest()
     {
         $request            = new ServerRequest([], [], '/injected', 'GET');
         $reflectionFunction = new ReflectionFunction(function (ServerRequest $request) {
@@ -47,7 +47,7 @@ class TypeHintRequestResolverTest extends TestCase
     /** @test
      * @throws ReflectionException
      */
-    public function doesNotAttemptToResolveParamsThatHaveAlreadyBeenResolved()
+    public function testDoesNotAttemptToResolveParamsThatHaveAlreadyBeenResolved()
     {
         $preResolvedRequest = new ServerRequest([], [], '/pre/resolved', 'GET');
         $injectedRequest    = new ServerRequest([], [], '/injected', 'GET');

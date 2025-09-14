@@ -31,6 +31,9 @@ use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
 use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Router;
+use Qubus\Routing\Tests\Fixtures\RouterMixin;
+
+use function dd;
 
 class RouterTest extends TestCase
 {
@@ -54,7 +57,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function mapReturnsaRouteObject()
+    public function testMapReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -69,7 +72,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function mapAcceptsLowercaseVerbs()
+    public function testMapAcceptsLowercaseVerbs()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -82,7 +85,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function getReturnsaRouteObject()
+    public function testGetReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -97,7 +100,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function headReturnsaRouteObject()
+    public function testHeadReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -112,7 +115,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function postReturnsaRouteObject()
+    public function testPostReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -127,7 +130,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function patchReturnsaRouteObject()
+    public function testPatchReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -142,7 +145,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function putReturnsaRouteObject()
+    public function testPutReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -157,7 +160,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function deleteReturnsaRouteObject()
+    public function testDeleteReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -172,7 +175,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function optionsReturnsaRouteObject()
+    public function testOptionsReturnsaRouteObject()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -187,7 +190,7 @@ class RouterTest extends TestCase
     /** @test
      * @throws TooLateToAddNewRouteException
      */
-    public function mapRemovesTrailingSlashFromUri()
+    public function testMapRemovesTrailingSlashFromUri()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -203,7 +206,7 @@ class RouterTest extends TestCase
      * @throws TooLateToAddNewRouteException
      * @throws Exception
      */
-    public function noReturnFromRouteActionResultsIna204StatusCode()
+    public function testNoReturnFromRouteActionResultsIna204StatusCode()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -222,7 +225,7 @@ class RouterTest extends TestCase
      * @throws TooLateToAddNewRouteException
      * @throws Exception
      */
-    public function leadingSlashIsOptionalWhenCreatingaRoute()
+    public function testLeadingSlashIsOptionalWhenCreatingaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -238,7 +241,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchReturnsaResponseObject()
+    public function testMatchReturnsaResponseObject()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -256,7 +259,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchDoesNotMutateReturnedResponseObject()
+    public function testMatchDoesNotMutateReturnedResponseObject()
     {
         $request  = new ServerRequest([], [], '/test/123', 'GET');
         $router   = new Router(new RouteCollector(), $this->container);
@@ -271,7 +274,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchReturnsa404ResponseObjectWhenRouteIsNotFound()
+    public function testMatchReturnsa404ResponseObjectWhenRouteIsNotFound()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -283,7 +286,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchWorksWithaClosure()
+    public function testMatchWorksWithaClosure()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -301,7 +304,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchUriWithTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
+    public function testMatchUriWithTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123/', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -319,7 +322,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchUriWithTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
+    public function testMatchUriWithTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123/', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -337,7 +340,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchUriWithoutTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
+    public function testMatchUriWithoutTrailingWhenRouteHasBeenDefinedWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -355,7 +358,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchUriWithoutTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
+    public function testMatchUriWithoutTrailingWhenRouteHasBeenDefinedWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -373,7 +376,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchWorksWithaClassAndMethodString()
+    public function testMatchWorksWithaClassAndMethodString()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -385,7 +388,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchThrowsExceptionWithInvalidClassAndStringMethod()
+    public function testMatchThrowsExceptionWithInvalidClassAndStringMethod()
     {
         $this->expectException(RouteParseException::class);
 
@@ -395,7 +398,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchThrowsExceptionWhenClassAndStringMethodContainsAnUnfoundClass()
+    public function testMatchThrowsExceptionWhenClassAndStringMethodContainsAnUnfoundClass()
     {
         $this->expectException(RouteControllerNotFoundException::class);
 
@@ -405,7 +408,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function matchThrowsExceptionWhenClassAndStringMethodContainsAnUnfoundMethod()
+    public function testMatchThrowsExceptionWhenClassAndStringMethodContainsAnUnfoundMethod()
     {
         $this->expectException(RouteMethodNotFoundException::class);
 
@@ -415,7 +418,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function paramsAreParsedAndPassedIntoCallbackFunction()
+    public function testParamsAreParsedAndPassedIntoCallbackFunction()
     {
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -433,25 +436,26 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function paramsAreParsedAndPassedIntoCallbackFunctionWhenSurroundedByWhitespace()
+    public function testParamsAreParsedAndPassedIntoCallbackFunctionWhenSurroundedByWhitespace()
     {
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
 
-        $route = $router->get('/posts/{ postId }/comments/{ commentId }', function ($params) use (&$count) {
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
             $count++;
 
             Assert::assertInstanceOf(RouteParams::class, $params);
-            Assert::assertSame('123', $params->postId);
-            Assert::assertSame('abc', $params->commentId);
+            Assert::assertSame('123', $params['postId']);
+            Assert::assertSame('abc', $params['commentId']);
         });
+        dd($route);
         $router->match($request);
 
         Assert::assertSame(1, $count);
     }
 
     /** @test */
-    public function canAddRegexConstraintsOnParamsAsKeyValue()
+    public function testCanAddRegexConstraintsOnParamsAsKeyValue()
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
@@ -468,7 +472,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleRegexConstraintsOnParamsAsKeyValue()
+    public function testCanAddMultipleRegexConstraintsOnParamsAsKeyValue()
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
@@ -485,7 +489,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddRegexConstraintsOnParamsAsArray()
+    public function testCanAddRegexConstraintsOnParamsAsArray()
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments', 'GET');
@@ -502,7 +506,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleRegexConstraintsOnParamsAsArray()
+    public function testCanAddMultipleRegexConstraintsOnParamsAsArray()
     {
         $matchingRequest    = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $nonMatchingRequest = new ServerRequest([], [], '/posts/abc/comments/123', 'GET');
@@ -522,7 +526,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canProvideOptionalParams()
+    public function testCanProvideOptionalParams()
     {
         $matchingRequest1   = new ServerRequest([], [], '/posts/123', 'GET');
         $matchingRequest2   = new ServerRequest([], [], '/posts', 'GET');
@@ -531,7 +535,7 @@ class RouterTest extends TestCase
 
         $count = 0;
 
-        $route = $router->get('/posts/{postId?}', function ($postId) use (&$count) {
+        $route = $router->get('/posts/{postId?}', function (?string $postId = null) use (&$count) {
             $count++;
         });
 
@@ -543,7 +547,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGenerateCanonicalUriWithTrailingSlashForNamedRoute()
+    public function testCanGenerateCanonicalUriWithTrailingSlashForNamedRoute()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -554,7 +558,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGenerateCanonicalUriWithTrailingSlashForNamedRouteWithParams()
+    public function testCanGenerateCanonicalUriWithTrailingSlashForNamedRouteWithParams()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -565,7 +569,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function urlThrowsExceptionWhenProvidedParamsFailTheRegexConstraints()
+    public function testUrlThrowsExceptionWhenProvidedParamsFailTheRegexConstraints()
     {
         $this->expectException(RouteParamFailedConstraintException::class);
 
@@ -580,7 +584,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function generatingaUrlForaNamedRouteThatDoesntExistThrowsAnException()
+    public function testGeneratingaUrlForaNamedRouteThatDoesntExistThrowsAnException()
     {
         $this->expectException(NamedRouteNotFoundException::class);
 
@@ -590,7 +594,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGenerateCanonicalUriAfterMatchHasBeenCalled()
+    public function testCanGenerateCanonicalUriAfterMatchHasBeenCalled()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -603,7 +607,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function addingRoutesAfterCallingUrlThrowsAnException()
+    public function testAddingRoutesAfterCallingUrlThrowsAnException()
     {
         $this->expectException(TooLateToAddNewRouteException::class);
 
@@ -618,7 +622,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function addingRoutesAfterCallingMatchThrowsAnException()
+    public function testAddingRoutesAfterCallingMatchThrowsAnException()
     {
         $this->expectException(TooLateToAddNewRouteException::class);
 
@@ -634,7 +638,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddRoutesInaGroup()
+    public function testCanAddRoutesInaGroup()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -656,7 +660,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddRoutesInaGroupUsingArrayAsFirstParam()
+    public function testCanAddRoutesInaGroupUsingArrayAsFirstParam()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -678,7 +682,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddRoutesInaGroupUsingArrayAsFirstParamWithNoPrefix()
+    public function testCanAddRoutesInaGroupUsingArrayAsFirstParamWithNoPrefix()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -700,7 +704,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function groupPrefixesWorkWithLeadingSlash()
+    public function testGroupPrefixesWorkWithLeadingSlash()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -722,7 +726,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function groupPrefixesWorkWithTrailingSlash()
+    public function testGroupPrefixesWorkWithTrailingSlash()
     {
         $request = new ServerRequest([], [], '/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -744,7 +748,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canSetBasePath()
+    public function testCanSetBasePath()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -763,7 +767,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canSetBasePathWithoutTrailingSlash()
+    public function testCanSetBasePathWithoutTrailingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -782,7 +786,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canSetBasePathWithoutLeadingSlash()
+    public function testCanSetBasePathWithoutLeadingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -801,7 +805,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canSetBasePathWithoutLeadingOrTrailingSlash()
+    public function testCanSetBasePathWithoutLeadingOrTrailingSlash()
     {
         $request = new ServerRequest([], [], '/base-path/prefix/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -820,7 +824,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canUpdateBasePathAfterMatchHasBeenCalled()
+    public function testCanUpdateBasePathAfterMatchHasBeenCalled()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $router->setBasePath('/base-path/');
@@ -846,7 +850,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canAddMiddlewareAsaClosureToaRoute()
+    public function testCanAddMiddlewareAsaClosureToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -871,7 +875,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGetCurrentlyMatchedRoute()
+    public function testCanGetCurrentlyMatchedRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -890,7 +894,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGetCurrentlyMatchedRouteName()
+    public function testCanGetCurrentlyMatchedRouteName()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -909,7 +913,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function currentRouteNameReturnsNullWhenMatchNotYetCalled()
+    public function testCurrentRouteNameReturnsNullWhenMatchNotYetCalled()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -922,7 +926,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function currentRouteNameReturnsNullWhenMatchedRouteHasNoName()
+    public function testCurrentRouteNameReturnsNullWhenMatchedRouteHasNoName()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -937,7 +941,7 @@ class RouterTest extends TestCase
     }
 
     /** @test */
-    public function canGetListOfRegisteredRoutes()
+    public function testCanGetListOfRegisteredRoutes()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $route1 = $router->get('/test/123', function () {
@@ -955,7 +959,7 @@ class RouterTest extends TestCase
     /**
      * @test
      */
-    public function canExtendPostBehaviorWithMacros()
+    public function testCanExtendPostBehaviorWithMacros()
     {
         Router::macro('testFunctionAddedByMacro', function () {
             return 'abc123';
@@ -970,22 +974,12 @@ class RouterTest extends TestCase
     /**
      * @test
      */
-    public function canExtendPostBehaviorWithMixin()
+    public function testCanExtendPostBehaviorWithMixin()
     {
         Router::mixin(new RouterMixin());
 
         $queryBuilder = new Router(new RouteCollector(), $this->container);
 
         Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
-    }
-}
-
-class RouterMixin
-{
-    public function testFunctionAddedByMixin(): \Closure
-    {
-        return function () {
-            return 'abc123';
-        };
     }
 }

@@ -11,7 +11,7 @@ use Qubus\Routing\Route\RouteParams;
 class RouterParamsTest extends TestCase
 {
     /** @test */
-    public function canGetParamByKey()
+    public function testCanGetParamByKey()
     {
         $params = new RouteParams(['key' => 'value']);
 
@@ -19,7 +19,7 @@ class RouterParamsTest extends TestCase
     }
 
     /** @test */
-    public function canIterateAllKeysAndValues()
+    public function testCanIterateAllKeysAndValues()
     {
         $params = new RouteParams([
             'key1' => 'value1',
@@ -40,7 +40,7 @@ class RouterParamsTest extends TestCase
     }
 
     /** @test */
-    public function returnNullWhenaKeyIsNotFound()
+    public function testReturnNullWhenaKeyIsNotFound()
     {
         $params = new RouteParams(['key' => 'value']);
 
@@ -48,7 +48,7 @@ class RouterParamsTest extends TestCase
     }
 
     /** @test */
-    public function canGetParamsAsArray()
+    public function testCanGetParamsAsArray()
     {
         $data   = ['key1' => 'value1', 'key2' => 'value2'];
         $params = new RouteParams($data);

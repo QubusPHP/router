@@ -11,7 +11,7 @@ use Qubus\Routing\Formatting;
 class FormattingTest extends TestCase
 {
     /** @test */
-    public function canRemoveTrailingSlash()
+    public function testCanRemoveTrailingSlash()
     {
         $string = 'string/';
 
@@ -19,7 +19,7 @@ class FormattingTest extends TestCase
     }
 
     /** @test */
-    public function canAddTrailingSlash()
+    public function testCanAddTrailingSlash()
     {
         $string = 'string';
 
@@ -27,7 +27,7 @@ class FormattingTest extends TestCase
     }
 
     /** @test */
-    public function addTrailingSlashDoesNotProduceDuplicates()
+    public function testAddTrailingSlashDoesNotProduceDuplicates()
     {
         $string = 'string/';
 
@@ -35,7 +35,7 @@ class FormattingTest extends TestCase
     }
 
     /** @test */
-    public function canRemoveLeadingSlash()
+    public function testCanRemoveLeadingSlash()
     {
         $string = '/string';
 
@@ -43,7 +43,7 @@ class FormattingTest extends TestCase
     }
 
     /** @test */
-    public function canAddLeadingSlash()
+    public function testCanAddLeadingSlash()
     {
         $string = 'string';
 
@@ -51,7 +51,7 @@ class FormattingTest extends TestCase
     }
 
     /** @test */
-    public function addLeadingSlashDoesNotProduceDuplicates()
+    public function testAddLeadingSlashDoesNotProduceDuplicates()
     {
         $string = '/string';
 

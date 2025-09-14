@@ -41,7 +41,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function groupFunctionIsChainable()
+    public function testGroupFunctionIsChainable()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -50,7 +50,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddGetRequestToaGroup()
+    public function testCanAddGetRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -69,7 +69,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddRequestToaGroupWithLeadingSlash()
+    public function testCanAddRequestToaGroupWithLeadingSlash()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -88,7 +88,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddHeadRequestToaGroup()
+    public function testCanAddHeadRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -107,7 +107,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddPostRequestToaGroup()
+    public function testCanAddPostRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -126,7 +126,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddPutRequestToaGroup()
+    public function testCanAddPutRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -145,7 +145,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddPatchRequestToaGroup()
+    public function testCanAddPatchRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -164,7 +164,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddDeleteRequestToaGroup()
+    public function testCanAddDeleteRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -183,7 +183,7 @@ class RouteGroupTest extends TestCase
     }
 
     /** @test */
-    public function canAddOptionRequestToaGroup()
+    public function testCanAddOptionRequestToaGroup()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -204,7 +204,7 @@ class RouteGroupTest extends TestCase
     /**
      * @test
      */
-    public function canExtendPostBehaviourWithMacros()
+    public function testCanExtendPostBehaviourWithMacros()
     {
         RouteGroup::macro('testFunctionAddedByMacro', function () {
             return 'abc123';
@@ -219,22 +219,12 @@ class RouteGroupTest extends TestCase
     /**
      * @test
      */
-    public function canExtendPostBehaviourWithMixin()
+    public function testCanExtendPostBehaviourWithMixin()
     {
         RouteGroup::mixin(new RouteGroupMixin());
 
         $queryBuilder = new RouteGroup([], new Router(new RouteCollector(), $this->container));
 
         Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
-    }
-}
-
-class RouteGroupMixin
-{
-    public function testFunctionAddedByMixin(): \Closure
-    {
-        return function () {
-            return 'abc123';
-        };
     }
 }

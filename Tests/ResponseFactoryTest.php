@@ -15,6 +15,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Interfaces\Responsable;
+use Qubus\Routing\Tests\Fixtures\ResponsableObject;
 
 class ResponseFactoryTest extends TestCase
 {
@@ -28,7 +29,7 @@ class ResponseFactoryTest extends TestCase
     }
 
     /** @test */
-    public function whenPassedaResponseInstanceTheSameObjectIsReturned()
+    public function testWhenPassedaResponseInstanceTheSameObjectIsReturned()
     {
         $response = new TextResponse('Testing', 200);
 
@@ -36,7 +37,7 @@ class ResponseFactoryTest extends TestCase
     }
 
     /** @test */
-    public function whenPassedaNonResponseInstanceaResponseObjectIsReturned()
+    public function testWhenPassedaNonResponseInstanceaResponseObjectIsReturned()
     {
         $response = ResponseFactory::create($this->request, 'Testing');
 
@@ -45,7 +46,7 @@ class ResponseFactoryTest extends TestCase
     }
 
     /** @test */
-    public function whenNothingIsPassedAnEmptyResponseObjectIsReturned()
+    public function testWhenNothingIsPassedAnEmptyResponseObjectIsReturned()
     {
         $response = ResponseFactory::create($this->request, '');
 
@@ -53,7 +54,7 @@ class ResponseFactoryTest extends TestCase
     }
 
     /** @test */
-    public function whenaResponsableObjectIsPassedTheResponseObjectIsReturned()
+    public function testWhenaResponsableObjectIsPassedTheResponseObjectIsReturned()
     {
         $textResponse = new TextResponse('testing123');
         $object       = Mockery::mock(ResponsableObject::class);
@@ -63,13 +64,5 @@ class ResponseFactoryTest extends TestCase
 
         Assert::assertInstanceOf(TextResponse::class, $response);
         Assert::assertSame('testing123', $response->getBody()->getContents());
-    }
-}
-
-class ResponsableObject implements Responsable
-{
-    public function toResponse(RequestInterface $request): ResponseInterface
-    {
-        return new TextResponse('testing123');
     }
 }

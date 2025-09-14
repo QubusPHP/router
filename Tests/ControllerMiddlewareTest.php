@@ -13,7 +13,7 @@ use Qubus\Tests\Routing\Middlewares\AddHeaderMiddleware;
 class ControllerMiddlewareTest extends TestCase
 {
     /** @test */
-    public function canRetrieveMiddleware()
+    public function testCanRetrieveMiddleware()
     {
         $middleware = new AddHeaderMiddleware('X-Header', 'testing123');
         $options    = new ControllerMiddlewareOptions();
@@ -24,7 +24,7 @@ class ControllerMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canRetrieveOptions()
+    public function testCanRetrieveOptions()
     {
         $middleware = new AddHeaderMiddleware('X-Header', 'testing123');
         $options    = new ControllerMiddlewareOptions();

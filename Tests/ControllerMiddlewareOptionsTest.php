@@ -11,7 +11,7 @@ use Qubus\Routing\Controller\ControllerMiddlewareOptions;
 class ControllerMiddlewareOptionsTest extends TestCase
 {
     /** @test */
-    public function byDefaultNoMethodsAreExcluded()
+    public function testByDefaultNoMethodsAreExcluded()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -20,7 +20,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function onlyIsChainable()
+    public function testOnlyIsChainable()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -28,7 +28,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function canUseOnlyToLimitMethods()
+    public function testCanUseOnlyToLimitMethods()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -39,7 +39,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function canUseOnlyToLimitMultipleMethods()
+    public function testCanUseOnlyToLimitMultipleMethods()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -51,7 +51,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function exceptIsChainable()
+    public function testExceptIsChainable()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -59,7 +59,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function canUseExceptToLimitMethods()
+    public function testCanUseExceptToLimitMethods()
     {
         $options = new ControllerMiddlewareOptions();
 
@@ -70,7 +70,7 @@ class ControllerMiddlewareOptionsTest extends TestCase
     }
 
     /** @test */
-    public function canUseExceptToLimitMultipleMethods()
+    public function testCanUseExceptToLimitMultipleMethods()
     {
         $options = new ControllerMiddlewareOptions();
 

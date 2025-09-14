@@ -45,7 +45,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function canAddSingleMiddlewareViaController()
+    public function testCanAddSingleMiddlewareViaController()
     {
         $request   = new ServerRequest([], [], '/test/123', 'GET');
         $router    = new Router(new RouteCollector(), $this->container);
@@ -67,7 +67,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function canResolveMiddlewareOnaControllerUsingCustomResolver()
+    public function testCanResolveMiddlewareOnaControllerUsingCustomResolver()
     {
         $resolver  = $this->createMockMiddlewareResolverWithHeader('X-Header', 'testing123');
         $request   = new ServerRequest([], [], '/test/123', 'GET');
@@ -90,7 +90,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleMiddlewareAsArrayViaController()
+    public function testCanAddMultipleMiddlewareAsArrayViaController()
     {
         $request   = new ServerRequest([], [], '/test/123', 'GET');
         $router    = new Router(new RouteCollector(), $this->container);
@@ -117,7 +117,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function controllerMiddlewareMethodReturnsOptions()
+    public function testControllerMiddlewareMethodReturnsOptions()
     {
         $controller = new MiddlewareProvidingController();
 
@@ -127,7 +127,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function middlewareCanBeLimitedToMethodsUsingOnly()
+    public function testMiddlewareCanBeLimitedToMethodsUsingOnly()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -145,7 +145,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function middlewareCanBeLimitedToMultipleMethodsUsingOnly()
+    public function testMiddlewareCanBeLimitedToMultipleMethodsUsingOnly()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -163,7 +163,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function middlewareCanBeLimitedToMethodsUsingExcept()
+    public function testMiddlewareCanBeLimitedToMethodsUsingExcept()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -181,7 +181,7 @@ class ControllerTest extends TestCase
     }
 
     /** @test */
-    public function middlewareCanBeLimitedToMultipleMethodsUsingExcept()
+    public function testMiddlewareCanBeLimitedToMultipleMethodsUsingExcept()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -201,7 +201,7 @@ class ControllerTest extends TestCase
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
     }
 
-    protected function assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods): void
+    protected function testAssertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods): void
     {
         $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
         // Add the routes
@@ -217,15 +217,21 @@ class ControllerTest extends TestCase
             $response = $router->match(new ServerRequest([], [], '/test/' . $method, 'GET'));
 
             if ($applied) {
-                Assert::assertTrue($response->hasHeader('X-Header'), '`' . $method . '` should have middleware applied');
+                Assert::assertTrue(
+                    $response->hasHeader('X-Header'),
+                    '`' . $method . '` should have middleware applied'
+                );
                 Assert::assertSame('testing123', $response->getHeader('X-Header')[0]);
             } else {
-                Assert::assertFalse($response->hasHeader('X-Header'), '`' . $method . '` should not have middleware applied');
+                Assert::assertFalse(
+                    $response->hasHeader('X-Header'),
+                    '`' . $method . '` should not have middleware applied'
+                );
             }
         }
     }
 
-    private function createMockMiddlewareResolverWithHeader($header, $value)
+    private function testCanreateMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver   = Mockery::mock(MiddlewareResolver::class);

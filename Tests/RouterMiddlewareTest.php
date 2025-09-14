@@ -46,7 +46,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMiddlewareAsaClosureToaRoute()
+    public function testCanAddMiddlewareAsaClosureToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -72,7 +72,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMiddlewareAsAnObjectToaRoute()
+    public function testCanAddMiddlewareAsAnObjectToaRoute()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -92,7 +92,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleMiddlewareToaRouteInSuccessiveCalls()
+    public function testCanAddMultipleMiddlewareToaRouteInSuccessiveCalls()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -112,7 +112,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleMiddlewareToaRouteInaSingleCall()
+    public function testCanAddMultipleMiddlewareToaRouteInaSingleCall()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -133,7 +133,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMultipleMiddlewareToaRouteAsAnArray()
+    public function testCanAddMultipleMiddlewareToaRouteAsAnArray()
     {
         $request = new ServerRequest([], [], '/test/123', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -154,7 +154,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddMiddlewareToaGroup()
+    public function testCanAddMiddlewareToaGroup()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -178,7 +178,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddSingleMiddlewareToaGroupWithoutWrappingInArray()
+    public function testCanAddSingleMiddlewareToaGroupWithoutWrappingInArray()
     {
         $request = new ServerRequest([], [], '/all', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
@@ -202,7 +202,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canAddBaseMiddlewareToBeAppliedToAllRoutes()
+    public function testCanAddBaseMiddlewareToBeAppliedToAllRoutes()
     {
         $router = new Router(new RouteCollector(), $this->container);
         $router->baseMiddleware = [
@@ -237,7 +237,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canResolveMiddlewareOnaRouteUsingaCustomResolver()
+    public function testCanResolveMiddlewareOnaRouteUsingaCustomResolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
@@ -254,7 +254,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canResolveMiddlewareOnaGroupUsingaCustomResolver()
+    public function testCanResolveMiddlewareOnaGroupUsingaCustomResolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
@@ -273,7 +273,7 @@ class RouterMiddlewareTest extends TestCase
     }
 
     /** @test */
-    public function canResolveGlobalMiddlewareUsingaCustomResolver()
+    public function testCanResolveGlobalMiddlewareUsingaCustomResolver()
     {
         $resolver = $this->createMockMiddlewareResolverWithHeader('X-Key', 'abc');
         $request  = new ServerRequest([], [], '/test/123', 'GET');
@@ -290,7 +290,7 @@ class RouterMiddlewareTest extends TestCase
         Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    private function createMockMiddlewareResolverWithHeader($header, $value)
+    private function testCreateMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver   = Mockery::mock(MiddlewareResolver::class);

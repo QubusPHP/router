@@ -46,7 +46,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function canPassaContainerIntoConstructor()
+    public function testCanPassaContainerIntoConstructor()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -54,7 +54,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function containerPassedToConstructorMustBePsr11Compatible()
+    public function testContainerPassedToConstructorMustBePsr11Compatible()
     {
         $this->expectException(TypeError::class);
 
@@ -65,7 +65,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function routeParamsAreInjectedIntoClosure()
+    public function testRouteParamsAreInjectedIntoClosure()
     {
         $router    = new Router(new RouteCollector(), $this->container);
         $count     = 0;
@@ -88,7 +88,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function typehintsAreInjectedIntoClosure()
+    public function testTypehintsAreInjectedIntoClosure()
     {
         $testServiceInstance = new TestService('abc123');
         $this->container->make(TestService::class, [$testServiceInstance]);
@@ -114,7 +114,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function typehintsAreInjectedIntoClosureWithParams()
+    public function testTypehintsAreInjectedIntoClosureWithParams()
     {
         $testServiceInstance = new TestService('abc123');
         $this->container->make(TestService::class, [$testServiceInstance]);
@@ -142,7 +142,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function routeParamsAreInjectedIntoClosureRegardlessOfParamOrder()
+    public function testRouteParamsAreInjectedIntoClosureRegardlessOfParamOrder()
     {
         $router    = new Router(new RouteCollector(), $this->container);
         $count     = 0;
@@ -165,7 +165,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function reflectionErrorIsThrownWhenTypehintsCantBeResolvedFromTheContainer()
+    public function testReflectionErrorIsThrownWhenTypehintsCantBeResolvedFromTheContainer()
     {
         $this->expectException(ReflectionException::class);
 
@@ -179,7 +179,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function routeParamsAreInjectedIntoControllerClass()
+    public function testRouteParamsAreInjectedIntoControllerClass()
     {
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -193,7 +193,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function typehintsAreInjectedIntoControllerClass()
+    public function testTypehintsAreInjectedIntoControllerClass()
     {
         $testServiceInstance = new TestService('abc123');
         $this->container->make(TestService::class, [$testServiceInstance]);
@@ -210,7 +210,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function typehintsAreInjectedIntoControllerClassWithParams()
+    public function testTypehintsAreInjectedIntoControllerClassWithParams()
     {
         $testServiceInstance = new TestService('abc123');
         $this->container->make(TestService::class, [$testServiceInstance]);
@@ -227,7 +227,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function canInjectRequestObject()
+    public function testCanInjectRequestObject()
     {
         $request   = new ServerRequest([], [], '/test/route', 'GET');
         $router    = new Router(new RouteCollector(), $this->container);
@@ -251,7 +251,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function canInjectRequestObjectWithaBody()
+    public function testCanInjectRequestObjectWithaBody()
     {
         $request   = new ServerRequest([], [], '/test/route', 'POST', 'php://input', [], [], [], 'post body');
         $router    = new Router(new RouteCollector(), $this->container);
@@ -276,7 +276,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function canInjectRequestSubClass()
+    public function testCanInjectRequestSubClass()
     {
         $request   = new ServerRequest([], [], '/test/route', 'GET');
         $router    = new Router(new RouteCollector(), $this->container);
@@ -301,7 +301,7 @@ class RouterDITest extends TestCase
     }
 
     /** @test */
-    public function constructorParamsAreInjectedIntoControllerClass()
+    public function testConstructorParamsAreInjectedIntoControllerClass()
     {
         $router              = new Router(new RouteCollector(), $this->container);
         $testServiceInstance = new TestService('abc123');

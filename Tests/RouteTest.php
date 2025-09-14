@@ -22,6 +22,8 @@ use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Router;
+use Qubus\Routing\Tests\Fixtures\RouteMixin;
+use Qubus\Routing\Tests\Fixtures\TestCallableController;
 use ReflectionException;
 
 class RouteTest extends TestCase
@@ -79,7 +81,7 @@ class RouteTest extends TestCase
     }
 
     /** @test
-     * @throws TypeException
+     * @throws TypeException|TooLateToAddNewRouteException
      */
     public function testWhereFunctionIsChainable()
     {
@@ -90,7 +92,7 @@ class RouteTest extends TestCase
     }
 
     /** @test
-     * @throws TooLateToAddNewRouteException
+     * @throws TooLateToAddNewRouteException|TypeException
      */
     public function testWhereFunctionIsChainableWhenPassedAnArray()
     {
@@ -185,26 +187,5 @@ class RouteTest extends TestCase
         });
 
         Assert::assertSame('abc123', $queryBuilder->testFunctionAddedByMixin());
-    }
-}
-
-class TestCallableController
-{
-    public static function testStatic()
-    {
-    }
-
-    public function test()
-    {
-    }
-}
-
-class RouteMixin
-{
-    public function testFunctionAddedByMixin(): \Closure
-    {
-        return function () {
-            return 'abc123';
-        };
     }
 }
