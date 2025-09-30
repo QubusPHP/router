@@ -20,13 +20,12 @@
         "php": ">=8.4",
         "php-di/invoker": "^2",
         "qubus/http": "^4",
-        "qubus/inheritance": "^3.0",
-        "qubus/injector": "^3",
+        "qubus/inheritance": "^4",
+        "qubus/injector": "^4",
         "relay/relay": "^3"
     },
     "require-dev": {
-        "mockery/mockery": "^1",
-        "qubus/qubus-coding-standard": "^1.1"
+        "qubus/qubus-coding-standard": "^2"
     },
     "autoload": {
         "psr-4": {
@@ -50,7 +49,8 @@
         "optimize-autoloader": true,
         "sort-packages": true,
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "pestphp/pest-plugin": true
         }
     }
 }
