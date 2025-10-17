@@ -115,7 +115,7 @@ final class Route implements Routable
             if (! isset($this->middlewareResolver)) {
                 return $name;
             }
-            return $this->middlewareResolver->resolve(name: $name);
+            return $this->middlewareResolver->resolve(definition: $name);
         });
 
         return $dispatcher->handle(request: $request);

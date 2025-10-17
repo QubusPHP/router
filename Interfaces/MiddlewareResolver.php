@@ -20,8 +20,8 @@ interface MiddlewareResolver
     /**
      * Resolves a middleware
      *
-     * @param mixed $name The key to look up a middleware
+     * @param mixed $definition The key to look up a middleware.
      * @return MiddlewareInterface|callable
      */
-    public function resolve(mixed $name): MiddlewareInterface|callable;
+    public function resolve(mixed $definition): MiddlewareInterface|callable;
 }

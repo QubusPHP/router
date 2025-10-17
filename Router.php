@@ -494,7 +494,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
             if (! isset($this->middlewareResolver)) {
                 return $name;
             }
-            return $this->middlewareResolver->resolve(name: $name);
+            return $this->middlewareResolver->resolve(definition: $name);
         });
         return $dispatcher->handle(request: $serverRequest);
     }
