@@ -91,7 +91,8 @@ class RouterDITest extends TestCase
     public function testTypehintsAreInjectedIntoClosure()
     {
         $testServiceInstance = new TestService('abc123');
-        $this->container->make(TestService::class, [$testServiceInstance]);
+        $this->container->define(TestService::class, [':value' => 'abc123']);
+        $this->container->share($testServiceInstance);
 
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -117,7 +118,8 @@ class RouterDITest extends TestCase
     public function testTypehintsAreInjectedIntoClosureWithParams()
     {
         $testServiceInstance = new TestService('abc123');
-        $this->container->make(TestService::class, [$testServiceInstance]);
+        $this->container->define(TestService::class, [':value' => 'abc123']);
+        $this->container->share($testServiceInstance);
 
         $router = new Router(new RouteCollector(), $this->container);
         $count  = 0;
@@ -196,7 +198,7 @@ class RouterDITest extends TestCase
     public function testTypehintsAreInjectedIntoControllerClass()
     {
         $testServiceInstance = new TestService('abc123');
-        $this->container->make(TestService::class, [$testServiceInstance]);
+        $this->container->define(TestService::class, [':value' => 'abc123']);
 
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -213,7 +215,7 @@ class RouterDITest extends TestCase
     public function testTypehintsAreInjectedIntoControllerClassWithParams()
     {
         $testServiceInstance = new TestService('abc123');
-        $this->container->make(TestService::class, [$testServiceInstance]);
+        $this->container->define(TestService::class, [':value' => 'abc123']);
 
         $router = new Router(new RouteCollector(), $this->container);
 
@@ -305,9 +307,12 @@ class RouterDITest extends TestCase
     {
         $router              = new Router(new RouteCollector(), $this->container);
         $testServiceInstance = new TestService('abc123');
-        $this->container->make(TestService::class, [$testServiceInstance]);
+        $this->container->define(TestService::class, [':value' => 'abc123']);
 
-        $router->get('/test/url', [TestConstructorParamController::class, 'Qubus\Tests\Routing\Controllers\TestConstructorParamController@returnTestServiceValue']);
+        $router->get(
+            '/test/url',
+            '\Qubus\Tests\Routing\Controllers\TestConstructorParamController@returnTestServiceValue'
+        );
 
         $request  = new ServerRequest([], [], '/test/url', 'GET');
         $response = $router->match($request);

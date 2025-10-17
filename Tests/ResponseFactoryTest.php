@@ -11,10 +11,8 @@ use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Qubus\Routing\Factories\ResponseFactory;
-use Qubus\Routing\Interfaces\Responsable;
 use Qubus\Routing\Tests\Fixtures\ResponsableObject;
 
 class ResponseFactoryTest extends TestCase

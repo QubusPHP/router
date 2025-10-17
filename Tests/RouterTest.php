@@ -29,11 +29,8 @@ use Qubus\Routing\Factories\ResponseFactory;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
-use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Router;
 use Qubus\Routing\Tests\Fixtures\RouterMixin;
-
-use function dd;
 
 class RouterTest extends TestCase
 {
@@ -423,12 +420,11 @@ class RouterTest extends TestCase
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
 
-        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($postId, $commentId) use (&$count) {
             $count++;
 
-            Assert::assertInstanceOf(RouteParams::class, $params);
-            Assert::assertSame('123', $params->postId);
-            Assert::assertSame('abc', $params->commentId);
+            Assert::assertSame('123', $postId);
+            Assert::assertSame('abc', $commentId);
         });
         $router->match($request);
 
@@ -441,14 +437,12 @@ class RouterTest extends TestCase
         $request = new ServerRequest([], [], '/posts/123/comments/abc', 'GET');
         $router  = new Router(new RouteCollector(), $this->container);
 
-        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($params) use (&$count) {
+        $route = $router->get('/posts/{postId}/comments/{commentId}', function ($postId, $commentId) use (&$count) {
             $count++;
 
-            Assert::assertInstanceOf(RouteParams::class, $params);
-            Assert::assertSame('123', $params['postId']);
-            Assert::assertSame('abc', $params['commentId']);
+            Assert::assertSame('123', $postId);
+            Assert::assertSame('abc', $commentId);
         });
-        dd($route);
         $router->match($request);
 
         Assert::assertSame(1, $count);
@@ -565,7 +559,7 @@ class RouterTest extends TestCase
         $route = $router->get('/posts/{id}/comments', function () {
         })->name('test.name');
 
-        Assert::assertSame('/posts/123/comments/', $router->url('test.name', ['id' => 123]));
+        Assert::assertSame('/posts/123/comments/', $router->url('test.name', ['id' => '123']));
     }
 
     /** @test */

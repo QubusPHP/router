@@ -39,7 +39,7 @@ class ControllerTest extends TestCase
                 \Psr\Http\Message\ServerRequestInterface::class => \Laminas\Diactoros\ServerRequest::class,
                 \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
                 \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
-                    \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+                        \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
             ],
         ]));
     }
@@ -54,10 +54,11 @@ class ControllerTest extends TestCase
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'));
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $router->get(
-            '/test/123',
-            'MiddlewareProvidingController@returnOne'
+                '/test/123',
+                'MiddlewareProvidingController@returnOne'
         );
 
         $response = $router->match($request);
@@ -77,10 +78,11 @@ class ControllerTest extends TestCase
         $controller = new MiddlewareProvidingController();
         $controller->middleware('middleware-key');
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $router->get(
-            '/test/123',
-            'MiddlewareProvidingController@returnOne'
+                '/test/123',
+                'MiddlewareProvidingController@returnOne'
         );
 
         $response = $router->match($request);
@@ -98,14 +100,15 @@ class ControllerTest extends TestCase
 
         $controller = new MiddlewareProvidingController();
         $controller->middleware([
-            new AddHeaderMiddleware('X-Header-1', 'testing123'),
-            new AddHeaderMiddleware('X-Header-2', 'testing456'),
+                new AddHeaderMiddleware('X-Header-1', 'testing123'),
+                new AddHeaderMiddleware('X-Header-2', 'testing456'),
         ]);
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $router->get(
-            '/test/123',
-            'MiddlewareProvidingController@returnOne'
+                '/test/123',
+                'MiddlewareProvidingController@returnOne'
         );
 
         $response = $router->match($request);
@@ -134,11 +137,12 @@ class ControllerTest extends TestCase
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->only('returnOne');
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $middlewareAppliedToMethods = [
-            'returnOne'   => true,
-            'returnTwo'   => false,
-            'returnThree' => false,
+                'returnOne'   => true,
+                'returnTwo'   => false,
+                'returnThree' => false,
         ];
 
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
@@ -152,11 +156,12 @@ class ControllerTest extends TestCase
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->only(['returnOne', 'returnThree']);
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $middlewareAppliedToMethods = [
-            'returnOne'   => true,
-            'returnTwo'   => false,
-            'returnThree' => true,
+                'returnOne'   => true,
+                'returnTwo'   => false,
+                'returnThree' => true,
         ];
 
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
@@ -170,11 +175,12 @@ class ControllerTest extends TestCase
         $controller = new MiddlewareProvidingController();
         $controller->middleware(new AddHeaderMiddleware('X-Header', 'testing123'))->except('returnOne');
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $middlewareAppliedToMethods = [
-            'returnOne'   => false,
-            'returnTwo'   => true,
-            'returnThree' => true,
+                'returnOne'   => false,
+                'returnTwo'   => true,
+                'returnThree' => true,
         ];
 
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
@@ -191,11 +197,12 @@ class ControllerTest extends TestCase
             'testing123'
         ))->except(['returnOne', 'returnThree']);
         $this->container->make(MiddlewareProvidingController::class, [$controller]);
+        $this->container->share($controller);
 
         $middlewareAppliedToMethods = [
-            'returnOne'   => false,
-            'returnTwo'   => true,
-            'returnThree' => false,
+                'returnOne'   => false,
+                'returnTwo'   => true,
+                'returnThree' => false,
         ];
 
         $this->assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods);
@@ -231,7 +238,31 @@ class ControllerTest extends TestCase
         }
     }
 
-    private function testCanreateMockMiddlewareResolverWithHeader($header, $value)
+    protected function assertMiddlewareIsAppliedToMethods($router, $middlewareAppliedToMethods)
+    {
+        // Add the routes
+        foreach ($middlewareAppliedToMethods as $method => $applied) {
+            $router->setDefaultNamespace('Qubus\\Tests\\Routing\\Controllers');
+            $router->get(
+                '/test/' . $method,
+                'MiddlewareProvidingController@' . $method
+            );
+        }
+
+        // Test middleware is only applied to the correct routes
+        foreach ($middlewareAppliedToMethods as $method => $applied) {
+            $response = $router->match(new ServerRequest([], [], '/test/' . $method, 'GET'));
+
+            if ($applied) {
+                Assert::assertTrue($response->hasHeader('X-Header'), '`' . $method . '` should have middleware applied');
+                Assert::assertSame('testing123', $response->getHeader('X-Header')[0]);
+            } else {
+                Assert::assertFalse($response->hasHeader('X-Header'), '`' . $method . '` should not have middleware applied');
+            }
+        }
+    }
+
+    private function createMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver   = Mockery::mock(MiddlewareResolver::class);

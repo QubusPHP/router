@@ -8,17 +8,17 @@ use Qubus\Tests\Routing\Services\TestService;
 
 class TestController
 {
-    public function returnHelloWorld()
+    public function returnHelloWorld(): string
     {
         return 'Hello World!';
     }
 
-    public function expectsInjectedParams($postId, $commentId)
+    public function expectsInjectedParams($postId, $commentId): string
     {
         return '$postId: ' . $postId . ' $commentId: ' . $commentId;
     }
 
-    public function postId($postId)
+    public function postId($postId): string
     {
         return '$postId: ' . $postId;
     }
@@ -28,7 +28,7 @@ class TestController
         return $testService->value;
     }
 
-    public function typeHintTestServiceWithParams(TestService $testService, $postId, $commentId)
+    public function typeHintTestServiceWithParams(TestService $testService, $postId, $commentId): string
     {
         return '$postId: ' . $postId . ' $commentId: ' . $commentId . ' TestService: ' . $testService->value;
     }

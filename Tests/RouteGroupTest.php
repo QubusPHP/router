@@ -20,6 +20,7 @@ use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
 use Qubus\Routing\Router;
+use Qubus\Routing\Tests\Fixtures\RouteGroupMixin;
 
 class RouteGroupTest extends TestCase
 {

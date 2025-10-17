@@ -24,6 +24,7 @@ use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteGroup;
 use Qubus\Routing\Router;
+use Qubus\Routing\Tests\Middlewares\AddHeaderAliasMiddleware;
 use Qubus\Tests\Routing\Middlewares\AddHeaderMiddleware;
 
 class RouterMiddlewareTest extends TestCase
@@ -41,6 +42,7 @@ class RouterMiddlewareTest extends TestCase
                 \Psr\Http\Server\RequestHandlerInterface::class => \Qubus\Http\RequestHandler::class,
                 \Qubus\Routing\Interfaces\MiddlewareResolver::class =>
                     \Qubus\Routing\Route\InjectorMiddlewareResolver::class,
+                'add.header.alias' => AddHeaderAliasMiddleware::class,
             ],
         ]));
     }
@@ -99,8 +101,8 @@ class RouterMiddlewareTest extends TestCase
 
         $router->get('/test/123', function () {
         })
-            ->middleware(new AddHeaderMiddleware('X-Key1', 'abc'))
-            ->middleware(new AddHeaderMiddleware('X-Key2', '123'));
+            ->middleware('add.header.alias:X-Key1, abc')
+            ->middleware('add.header.alias:X-Key2, 123');
 
         $response = $router->match($request);
 
@@ -290,7 +292,7 @@ class RouterMiddlewareTest extends TestCase
         Assert::assertSame('abc', $response->getHeader('X-Key')[0]);
     }
 
-    private function testCreateMockMiddlewareResolverWithHeader($header, $value)
+    private function createMockMiddlewareResolverWithHeader($header, $value)
     {
         $middleware = new AddHeaderMiddleware($header, $value);
         $resolver   = Mockery::mock(MiddlewareResolver::class);

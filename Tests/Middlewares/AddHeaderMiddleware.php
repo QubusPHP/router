@@ -24,6 +24,6 @@ class AddHeaderMiddleware implements MiddlewareInterface
     {
         $response = $handler->handle($request);
 
-        return $response->withHeader($this->key, $this->value);
+        return $response->withHeader($this->key, $this->value)->withStatus(200);
     }
 }
