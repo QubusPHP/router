@@ -138,7 +138,21 @@ class InjectorMiddlewareResolver implements MiddlewareResolver
                 $key = trim(string: $key);
                 $value = trim(string: $value);
 
-                $args[] = $value;        // for positional support
+                // Detect array syntax like [admin,editor]
+                if (preg_match('/^\[(.*)\]$/', $value, $matches)) {
+                    $inner = trim(string: $matches[1]);
+                    $arrayValues = array_filter(
+                        array: array_map(
+                            callback: 'trim',
+                            array: explode(separator: ',', string: $inner)
+                        )
+                    );
+                    $value = $arrayValues;
+                    $args = array_merge($args, $arrayValues);
+                } else {
+                    $args[] = $value; // for positional support
+                }
+
                 $options[$key] = $value; // for named support
             } else {
                 $value = trim(string: $pair);
