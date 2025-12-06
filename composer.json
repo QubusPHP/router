@@ -18,6 +18,7 @@
     ],
     "require": {
         "php": ">=8.4",
+        "opis/closure": "^4.4",
         "php-di/invoker": "^2",
         "qubus/http": "^4",
         "qubus/inheritance": "^4",

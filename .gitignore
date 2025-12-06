@@ -10,3 +10,4 @@
 composer.lock
 CustomRouterRules.php
 index.php
+routes.v4.php

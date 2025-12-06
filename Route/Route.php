@@ -38,26 +38,26 @@ final class Route implements Routable
     use MacroAware;
 
     public string $uri = '' {
-        get => $this->uri;
-        set(string $value) => $this->uri = rtrim(string: $value, characters: ' /');
+    get => $this->uri;
+    set(string $value) => $this->uri = rtrim(string: $value, characters: ' /');
     }
     public array $methods = [] {
-        get => $this->methods;
+    get => $this->methods;
     }
     protected RouteAction $routeAction;
     public ?string $name = null {
-        get => $this->name;
+    get => $this->name;
     }
     protected ?string $domain = null;
     protected ?string $subDomain = null;
     protected array $schemes = [] {
-        &get => $this->schemes;
+    & get => $this->schemes;
     }
     protected ?Invoker $invoker = null;
     protected ?MiddlewareResolver $middlewareResolver = null;
     protected array $middlewares = [];
     public array $paramConstraints = [] {
-        &get => $this->paramConstraints;
+    & get => $this->paramConstraints;
     }
     protected ?string $defaultNamespace = null;
     protected ?string $namespace = null;
@@ -236,5 +236,15 @@ final class Route implements Routable
     public function getActionName(): string
     {
         return $this->routeAction->getActionName();
+    }
+
+    public function getRouteAction(): RouteAction
+    {
+        return $this->routeAction;
+    }
+
+    public function getSchemes(): ?array
+    {
+        return $this->schemes;
     }
 }

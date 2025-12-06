@@ -37,6 +37,7 @@ use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Route\InjectorMiddlewareResolver;
 use Qubus\Routing\Route\Route;
 use Qubus\Routing\Route\RouteCollector;
+use Qubus\Routing\Route\RouteFileCache;
 use Qubus\Routing\Route\RouteGroup;
 use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Route\RouteResource;
@@ -53,6 +54,8 @@ use function file_get_contents;
 use function implode;
 use function json_decode;
 use function ltrim;
+use function Opis\Closure\serialize as opis_serialize;
+use function Opis\Closure\unserialize as opis_unserialize;
 use function preg_match;
 use function preg_match_all;
 use function str_ends_with;
@@ -71,7 +74,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         get => $this->request;
     }
 
-    public string $version = '4.0.9';
+    public string $version = '4.1.0';
 
     /** @var array $routes */
     public array $routes = [] {
@@ -97,6 +100,8 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     protected ?MiddlewareResolver $middlewareResolver = null;
 
     protected ?Invoker $invoker = null;
+
+    protected ?RouteFileCache $routeCache = null;
 
     /** @var array $baseMiddleware */
     public array $baseMiddleware = [] {
@@ -173,6 +178,30 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     public function setDefaultNamespace(string $namespace): void
     {
         $this->defaultNamespace = $namespace;
+    }
+
+    /**
+     * Use this method to enable route caching.
+     *
+     * @param string $file
+     * @return void
+     */
+    public function enableRouteCache(string $file): void
+    {
+        $this->routeCache = new RouteFileCache($file);
+    }
+
+    /**
+     * Disable route caching for this router instance.
+     */
+    public function disableRouteCache(): void
+    {
+        $this->routeCache = null;
+    }
+
+    public function hasRouteCache(): bool
+    {
+        return $this->routeCache !== null;
     }
 
     /**
@@ -358,12 +387,8 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         }
     }
 
-    protected function createRoutes(): void
+    protected function buildRoutes(): void
     {
-        if ($this->routesCreated) {
-            return;
-        }
-
         $this->routeCollector->basePath = $this->basePath;
 
         $this->fireEvents(name: RoutingEventHandler::EVENT_BOOT, arguments: [
@@ -414,6 +439,95 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
 
         $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
             'loadedRoutes' => $this->routes,
+        ]);
+    }
+
+    protected function createRoutes(): void
+    {
+        if ($this->routesCreated) {
+            return;
+        }
+
+        if ($this->routeCache !== null) {
+
+            $compiled = $this->routeCache->get(function () {
+                $this->buildRoutes();
+                return $this->exportCompiledRoutes();
+            });
+
+            if (! empty($compiled)) {
+                $this->importCompiledRoutes($compiled);
+                $this->routesCreated = true;
+                return;
+            }
+        }
+
+        $this->buildRoutes();
+        $this->routesCreated = true;
+    }
+
+    protected function exportCompiledRoutes(): array
+    {
+        if ($this->routeCache === null) {
+            // If caching is disabled, do not import / unserialize anything.
+            return [];
+        }
+
+        $compiled = [];
+
+        foreach ($this->routeCollector->routes as $r) {
+            [$method, $subdomain, $route, $target, $name] = $r;
+
+            $compiled[] = [
+                $method,
+                $subdomain,
+                $route,
+                opis_serialize($target),
+                $name,
+            ];
+        }
+
+        return $compiled;
+    }
+
+    protected function importCompiledRoutes(array $compiled): void
+    {
+        if ($this->routeCache === null) {
+            return;
+        }
+
+        foreach ($compiled as $route) {
+
+            $target = opis_unserialize($route[3]);
+
+            if (! $target instanceof Route) {
+                continue;
+            }
+
+            $this->routes[] = $target;
+            $this->routeCollector->domain = $target->getDomain();
+
+            $this->routeCollector->map(
+                implode(separator: '|', array: $target->methods),
+                $target->getSubDomain() ?? null,
+                Formatting::addTrailingSlash($target->uri),
+                $target,
+                $target->name ?? null
+            );
+
+            /**
+             * Also register URI without trailing slash
+             */
+            $this->routeCollector->map(
+                implode(separator: '|', array: $target->methods),
+                $target->getSubDomain() ?? null,
+                Formatting::removeTrailingSlash($target->uri),
+                $target
+            );
+        }
+
+        $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
+            'loadedCacheRoutes' => $compiled,
         ]);
     }
 
