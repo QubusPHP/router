@@ -36,6 +36,7 @@ use Qubus\Routing\Interfaces\MiddlewareResolver;
 use Qubus\Routing\Interfaces\Routable;
 use Qubus\Routing\Route\InjectorMiddlewareResolver;
 use Qubus\Routing\Route\Route;
+use Qubus\Routing\Route\RouteAttributes;
 use Qubus\Routing\Route\RouteCollector;
 use Qubus\Routing\Route\RouteFileCache;
 use Qubus\Routing\Route\RouteGroup;
@@ -50,6 +51,7 @@ use function array_map;
 use function array_merge;
 use function call_user_func;
 use function count;
+use function dd;
 use function file_get_contents;
 use function implode;
 use function json_decode;
@@ -580,6 +582,13 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         ServerRequestInterface $serverRequest,
         RouteParams $params
     ): ResponseInterface {
+        $serverRequest = $serverRequest
+            ->withAttribute(RouteAttributes::ROUTE, $route)
+            ->withAttribute(RouteAttributes::PARAMS, $params)
+            ->withAttribute(RouteAttributes::URI, $route->uri)
+            ->withAttribute(RouteAttributes::METHODS, $route->methods)
+            ->withAttribute(RouteAttributes::NAME, $route->name);
+
         if (count($this->baseMiddleware) === 0) {
             $this->fireEvents(name: RoutingEventHandler::EVENT_RENDER_MIDDLEWARES, arguments: [
                 'route'       => $route,
