@@ -534,6 +534,18 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     }
 
     /**
+     * Add route.
+     *
+     * @param Route $route The route.
+     * @return void Add route to routes array.
+     * @throws TooLateToAddNewRouteException
+     */
+    public function hydrateRoute(Routable $route): void
+    {
+        $this->addRoute($route);
+    }
+
+    /**
      * {@inheritDoc}
      * @throws \Exception
      */
