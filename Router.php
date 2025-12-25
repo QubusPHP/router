@@ -54,6 +54,7 @@ use function count;
 use function dd;
 use function file_get_contents;
 use function implode;
+use function is_array;
 use function json_decode;
 use function ltrim;
 use function Opis\Closure\serialize as opis_serialize;
@@ -62,6 +63,7 @@ use function preg_match;
 use function preg_match_all;
 use function str_ends_with;
 use function str_replace;
+use function strtoupper;
 use function trim;
 
 use const JSON_PRETTY_PRINT;
@@ -534,6 +536,34 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     }
 
     /**
+     * Method to override/normalize the HTTP method before match/dispatch.
+     *
+     * @param ServerRequestInterface $request
+     * @return ServerRequestInterface
+     */
+    protected function normalizeHttpMethod(ServerRequestInterface $request): ServerRequestInterface
+    {
+        if ($request->getMethod() !== 'POST') {
+            return $request;
+        }
+
+        $override = $request->getHeaderLine('X-HTTP-Method-Override');
+
+        if ($override === '') {
+            $body = $request->getParsedBody();
+            if (is_array($body) && isset($body['_method'])) {
+                $override = $body['_method'];
+            }
+        }
+
+        if ($override !== '') {
+            return $request->withMethod(strtoupper($override));
+        }
+
+        return $request;
+    }
+
+    /**
      * Add route.
      *
      * @param Route $route The route.
@@ -551,8 +581,9 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      */
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
-        $this->fireEvents(name: RoutingEventHandler::EVENT_INIT);
+        $serverRequest = $this->normalizeHttpMethod($serverRequest);
 
+        $this->fireEvents(name: RoutingEventHandler::EVENT_INIT);
         $this->createRoutes();
 
         $uri = $this->request->getRewriteUrl() ?? $serverRequest->getUri()->getPath();
