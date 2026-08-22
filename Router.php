@@ -88,7 +88,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         get => $this->request;
     }
 
-    public string $version = '4.3.0';
+    public string $version = '4.3.1';
 
     /** @var array $routes */
     public array $routes = [] {

@@ -184,8 +184,10 @@ final class Route implements Routable
 
     public function namespace(?string $namespace): Routable
     {
-        $this->namespace = $namespace;
+        // An empty group namespace means no override; retain the router default.
+        $this->namespace = $namespace === '' ? null : $namespace;
         $this->setAction($this->routeAction->getAction());
+
         return $this;
     }
 
