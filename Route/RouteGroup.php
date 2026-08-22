@@ -21,9 +21,13 @@ use Qubus\Routing\Router;
 use Qubus\Routing\Traits\RouteMapperAware;
 
 use function call_user_func;
+use function class_exists;
+use function explode;
 use function is_array;
+use function is_callable;
 use function is_string;
 use function ltrim;
+use function str_contains;
 use function trim;
 
 class RouteGroup implements Mappable
@@ -79,8 +83,10 @@ class RouteGroup implements Mappable
     /**
      * @throws TooLateToAddNewRouteException
      */
-    public function map(array $verbs, string $uri, callable|string $callback): Routable
+    public function map(array $verbs, string $uri, array|callable|string $callback): Routable
     {
+        $callback = $this->applyNamespaceToAction($callback);
+
         return $this->router->map(
             verbs: $verbs,
             uri: $this->appendPrefixToUri($uri),
@@ -92,12 +98,35 @@ class RouteGroup implements Mappable
         ->subDomain($this->subDomain);
     }
 
+    private function applyNamespaceToAction(array|callable|string $action): array|callable|string
+    {
+        if ($this->namespace === '' || is_callable($action)) {
+            return $action;
+        }
+
+        if (is_string($action)) {
+            if (str_contains($action, '@')) {
+                [$class, $method] = explode('@', $action, 2);
+                return class_exists($class) ? $action : $this->namespace . '\\' . $class . '@' . $method;
+            }
+
+            return class_exists($action) ? $action : $this->namespace . '\\' . $action;
+        }
+
+        if (isset($action[0]) && is_string($action[0]) && ! class_exists($action[0])) {
+            $action[0] = $this->namespace . '\\' . $action[0];
+        }
+
+        return $action;
+    }
+
     public function group(array|string $params, callable $callback): RouteGroup
     {
         if (is_string(value: $params)) {
             $params = $this->appendPrefixToUri(uri: $params);
         } elseif (is_array(value: $params)) {
-            $params['prefix'] = $params['prefix'] ? $this->appendPrefixToUri(uri: $params['prefix']) : '';
+            $prefix = $params['prefix'] ?? '';
+            $params['prefix'] = $prefix !== '' ? $this->appendPrefixToUri(uri: $prefix) : $this->prefix;
         }
 
         $group = new RouteGroup(params: $params, router: $this->router);

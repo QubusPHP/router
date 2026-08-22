@@ -30,50 +30,50 @@ interface Mappable
      *
      * @param array $verbs
      * @param string $uri
-     * @param callable|string $callback
+     * @param array|callable|string $callback
      * @return Routable
      */
-    public function map(array $verbs, string $uri, callable|string $callback): Routable;
+    public function map(array $verbs, string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to any HTTP method.
      */
-    public function any(string $uri, callable|string $callback): Routable;
+    public function any(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to GET HTTP method
      */
-    public function get(string $uri, callable|string $callback): Routable;
+    public function get(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to POST HTTP method
      */
-    public function post(string $uri, callable|string $callback): Routable;
+    public function post(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to PATCH HTTP method
      */
-    public function patch(string $uri, callable|string $callback): Routable;
+    public function patch(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to PUT HTTP method
      */
-    public function put(string $uri, callable|string $callback): Routable;
+    public function put(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to DELETE HTTP method
      */
-    public function delete(string $uri, callable|string $callback): Routable;
+    public function delete(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to HEAD HTTP method
      */
-    public function head(string $uri, callable|string $callback): Routable;
+    public function head(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to OPTIONS HTTP method
      */
-    public function options(string $uri, callable|string $callback): Routable;
+    public function options(string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add route group

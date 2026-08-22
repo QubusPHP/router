@@ -17,32 +17,40 @@ use Qubus\Exception\Exception;
 use Qubus\Routing\Exceptions\NamedRouteNotFoundException;
 use Qubus\Routing\Interfaces\Collector;
 use RuntimeException;
-use Traversable;
 
+use function array_map;
 use function array_merge;
 use function call_user_func_array;
-use function is_array;
+use function explode;
+use function in_array;
 use function is_numeric;
 use function preg_match;
 use function preg_match_all;
+use function rtrim;
 use function str_replace;
 use function strcmp;
-use function stripos;
+use function strcasecmp;
+use function str_starts_with;
+use function strtolower;
 use function strlen;
 use function strncmp;
 use function strpos;
 use function substr;
+use function strtoupper;
 
 use const PREG_SET_ORDER;
 
 class RouteCollector implements Collector
 {
+    //phpcs:disable
     /** @var array Array of all routes (incl. named routes). */
     public array $routes = [] {
         &get => $this->routes;
     }
     /** @var array Array of all named routes. */
     protected array $namedRoutes = [];
+    /** @var array<string, string> Host associated with each named route. */
+    protected array $namedRouteHosts = [];
     /** @var ?string domain */
     public ?string $domain = null {
         set(?string $value) => $this->domain = $value;
@@ -66,6 +74,7 @@ class RouteCollector implements Collector
         '**' => '.++',
         ''   => '[^/\.]++',
     ];
+    //phpcs:enable
 
     /**
      * Create router.
@@ -97,6 +106,15 @@ class RouteCollector implements Collector
         }
     }
 
+    public function clearRoutes(): void
+    {
+        $this->routes = [];
+        $this->namedRoutes = [];
+        $this->namedRouteHosts = [];
+        $this->domain = null;
+        $this->subdomain = null;
+    }
+
     /**
      * Add named match types. It uses array_merge so keys can be overwritten.
      *
@@ -120,8 +138,13 @@ class RouteCollector implements Collector
      *                     reverse route this url in your application.
      * @throws RuntimeException
      */
-    public function map(string $method, ?string $subdomain, string $route, mixed $target, ?string $name = null): void
-    {
+    public function map(
+        string $method,
+        ?string $subdomain = null,
+        string $route = '',
+        mixed $target = '',
+        ?string $name = null
+    ): void {
         $this->subdomain = $subdomain;
 
         $this->routes[] = [$method, $subdomain, $route, $target, $name];
@@ -130,6 +153,10 @@ class RouteCollector implements Collector
                 throw new RuntimeException(message: "Can not redeclare route '{$name}'");
             }
             $this->namedRoutes[$name] = $route;
+
+            if ($target instanceof Route) {
+                $this->namedRouteHosts[$name] = $this->routeUrlPrefix($target);
+            }
         }
         return;
     }
@@ -146,7 +173,9 @@ class RouteCollector implements Collector
      */
     public function generateUri(string $routeName, array $params = []): string
     {
-        if (null !== $this->domain) {
+        if (isset($this->namedRouteHosts[$routeName])) {
+            $domain = $this->namedRouteHosts[$routeName];
+        } elseif (null !== $this->domain) {
             $domain = $this->domain;
         } elseif (null !== $this->subdomain) {
             $domain = $this->subdomain;
@@ -176,7 +205,7 @@ class RouteCollector implements Collector
 
                 if (isset($params[$param])) {
                     // Part is found, replace for param value
-                    $url = str_replace(search: $block, replace: $params[$param], subject: $url);
+                    $url = str_replace(search: $block, replace: (string) $params[$param], subject: $url);
                 } elseif ($optional && $index !== 0) {
                     // Only strip preceding slash if it's not at the base
                     $url = str_replace(search: $pre . $block, replace: '', subject: $url);
@@ -198,7 +227,8 @@ class RouteCollector implements Collector
     public function match(
         ?string $requestHost = null,
         ?string $requestUrl = null,
-        ?string $requestMethod = null
+        ?string $requestMethod = null,
+        ?string $requestScheme = null
     ): array|bool {
         $params = [];
         /**
@@ -220,6 +250,14 @@ class RouteCollector implements Collector
         /**
          * Strip base path from request url.
          */
+        if ($this->basePath !== '' && ! str_starts_with($requestUrl, $this->basePath)) {
+            if ($requestUrl === rtrim($this->basePath, '/')) {
+                $requestUrl = $this->basePath;
+            } else {
+                return false;
+            }
+        }
+
         $requestUrl = substr(string: $requestUrl, offset: strlen(string: $this->basePath));
         /**
          * Strip query string (?a=b) from Request Url.
@@ -241,11 +279,27 @@ class RouteCollector implements Collector
             /**
              * Check if request domain matches. If not, abandon early. (CHEAPER).
              */
-            if ((null != $this->domain && null != $subdomain) && $requestHost !== $subdomain . '.' . $this->domain) {
+            if ($target instanceof Route && ! $this->routeMatchesHost($target, $requestHost)) {
                 continue;
             }
 
-            $method_match = stripos(haystack: $methods, needle: $requestMethod) !== false;
+            if ($target instanceof Route && ! $this->routeMatchesScheme($target, $requestScheme)) {
+                continue;
+            }
+
+            if (
+                ! ($target instanceof Route)
+                && (null != $this->domain && null != $subdomain)
+                && strcasecmp($requestHost, $subdomain . '.' . $this->domain) !== 0
+            ) {
+                continue;
+            }
+
+            $method_match = in_array(
+                strtoupper($requestMethod),
+                array_map('strtoupper', explode('|', $methods)),
+                true
+            );
             /**
              * Method did not match, continue to next route.
              */
@@ -302,6 +356,50 @@ class RouteCollector implements Collector
             }
         }
         return false;
+    }
+
+    private function routeMatchesHost(Route $route, string $requestHost): bool
+    {
+        $expectedHost = $this->routeHost($route);
+
+        return $expectedHost === '' || strcasecmp($requestHost, $expectedHost) === 0;
+    }
+
+    private function routeHost(Route $route): string
+    {
+        $domain = $route->getDomain() ?? '';
+        $subdomain = $route->getSubDomain() ?? '';
+
+        if ($domain === '') {
+            return $subdomain;
+        }
+
+        return $subdomain === '' ? $domain : $subdomain . '.' . $domain;
+    }
+
+    private function routeMatchesScheme(Route $route, ?string $requestScheme): bool
+    {
+        $schemes = $route->getSchemes() ?? [];
+
+        if ($schemes === []) {
+            return true;
+        }
+
+        return $requestScheme !== null
+            && $requestScheme !== ''
+            && in_array(strtolower($requestScheme), array_map('strtolower', $schemes), true);
+    }
+
+    private function routeUrlPrefix(Route $route): string
+    {
+        $host = $this->routeHost($route);
+        $schemes = $route->getSchemes() ?? [];
+
+        if ($host === '' || $schemes === []) {
+            return $host;
+        }
+
+        return $schemes[0] . '://' . $host;
     }
 
     /**

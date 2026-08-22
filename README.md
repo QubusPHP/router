@@ -4,7 +4,7 @@ Qubus router is a powerful and fast PHP router for PSR-7/PSR-15 messages.
 
 ## Features
 
-* Basic routing (`GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `UPDATE`, `DELETE`) with support for custom multiple HTTP verbs.
+* Basic routing (`GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`) with support for custom multiple HTTP verbs.
 * Regular expression constraints for parameters.
 * Named routes.
 * Generating url to routes.
@@ -16,6 +16,7 @@ Qubus router is a powerful and fast PHP router for PSR-7/PSR-15 messages.
 * Domain/Subdomain routing
 * Custom boot managers to rewrite urls
 * Option to load routes from JSON file
+* Atomic, versioned route caching for closures, controller strings, controller arrays, and invokable controllers.
 * and more . . .
 
 ## Requirements
@@ -23,7 +24,7 @@ Qubus router is a powerful and fast PHP router for PSR-7/PSR-15 messages.
 
 ## Installation
 
-```
+```shell
 composer require qubus/router
 ```
 
@@ -40,6 +41,7 @@ RewriteRule . index.php [L]
 ```
 
 ### Nginx
+
 ```
 location / {
     try_files $uri /index.php;
@@ -47,5 +49,5 @@ location / {
 ```
 
 ## More Info
-- [Documentation](https://docs.qubusphp.com/routing/)
-- [Contributing](https://docs.stalframework.com/contributing/)
+
+- [Documentation](https://codefyphp.com/docs/getting-started/basics/routing/)

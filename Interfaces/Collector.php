@@ -68,7 +68,8 @@ interface Collector
     public function match(
         ?string $requestHost = null,
         ?string $requestUrl = null,
-        ?string $requestMethod = null
+        ?string $requestMethod = null,
+        ?string $requestScheme = null
     ): bool|array;
 
     /**

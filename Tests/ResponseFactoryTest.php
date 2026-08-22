@@ -19,6 +19,8 @@ class ResponseFactoryTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
 
+    private ServerRequest $request;
+
     protected function setUp(): void
     {
         parent::setUp();

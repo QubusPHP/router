@@ -140,6 +140,11 @@ final class Route implements Routable
 
     public function domain(?string $domain): Routable
     {
+        if ($domain === null || $domain === '') {
+            $this->domain = $domain;
+            return $this;
+        }
+
         if (false !== preg_match('@^(?:(https?):)?(\/\/[^/]+)@i', $domain, $matches)) {
             if (empty($matches)) {
                 $matches = [$domain, null, $domain];
@@ -157,6 +162,11 @@ final class Route implements Routable
 
     public function subDomain(?string $subdomain): Routable
     {
+        if ($subdomain === null || $subdomain === '') {
+            $this->subDomain = $subdomain;
+            return $this;
+        }
+
         if (false !== preg_match('@^(?:(https?):)?(\/\/[^/]+)@i', $subdomain, $matches)) {
             if (empty($matches)) {
                 $matches = [$subdomain, null, $subdomain];
@@ -175,6 +185,7 @@ final class Route implements Routable
     public function namespace(?string $namespace): Routable
     {
         $this->namespace = $namespace;
+        $this->setAction($this->routeAction->getAction());
         return $this;
     }
 
@@ -210,7 +221,7 @@ final class Route implements Routable
         $args = func_get_args();
         foreach ($args as $middleware) {
             if (is_array(value: $middleware)) {
-                $this->middlewares += $middleware;
+                $this->middlewares = array_merge($this->middlewares, $middleware);
             } else {
                 $this->middlewares[] = $middleware;
             }
@@ -241,6 +252,11 @@ final class Route implements Routable
     public function getRouteAction(): RouteAction
     {
         return $this->routeAction;
+    }
+
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares;
     }
 
     public function getSchemes(): ?array

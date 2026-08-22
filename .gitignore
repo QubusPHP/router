@@ -7,7 +7,9 @@
 .php-cs-fixer.cache
 .phpcs-cache
 .phpunit.result.cache
+.phpunit.cache/
 composer.lock
 CustomRouterRules.php
 index.php
 routes.v4.php
+routing.md

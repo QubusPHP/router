@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Qubus\Routing;
 
+use JsonException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -27,6 +28,7 @@ use Qubus\Inheritance\MacroAware;
 use Qubus\Routing\Events\EventHandler;
 use Qubus\Routing\Events\RoutingEventHandler;
 use Qubus\Routing\Exceptions\NamedRouteNotFoundException;
+use Qubus\Routing\Exceptions\RouteNameRedefinedException;
 use Qubus\Routing\Exceptions\RouteParamFailedConstraintException;
 use Qubus\Routing\Exceptions\TooLateToAddNewRouteException;
 use Qubus\Routing\Interfaces\BootManager;
@@ -44,17 +46,22 @@ use Qubus\Routing\Route\RouteParams;
 use Qubus\Routing\Route\RouteResource;
 use Qubus\Routing\Traits\RouteMapperAware;
 use Relay\Relay;
+use RuntimeException;
+use Throwable;
 
 use function array_diff;
 use function array_filter;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function base64_decode;
+use function base64_encode;
 use function call_user_func;
 use function count;
-use function dd;
 use function file_get_contents;
 use function implode;
 use function is_array;
+use function is_string;
 use function json_decode;
 use function ltrim;
 use function Opis\Closure\serialize as opis_serialize;
@@ -67,18 +74,21 @@ use function strtoupper;
 use function trim;
 
 use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 
 class Router implements Psr7Router, Mappable, MiddlewareInterface
 {
     use MacroAware;
     use RouteMapperAware;
 
+    private const int ROUTE_CACHE_VERSION = 2;
+
     //phpcs:disable
     public Request $request {
         get => $this->request;
     }
 
-    public string $version = '4.1.0';
+    public string $version = '4.3.0';
 
     /** @var array $routes */
     public array $routes = [] {
@@ -148,7 +158,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
 
     public function prependUrl(string $url): void
     {
-        $this->routeCollector->basePath = $url;
+        $this->setBasePath($url);
     }
 
     /**
@@ -169,6 +179,10 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      */
     public function setBasePath(string $basePath): void
     {
+        if ($this->routesCreated && $this->routeCollector instanceof RouteCollector) {
+            $this->routeCollector->clearRoutes();
+        }
+
         $this->basePath = Formatting::addLeadingSlash(input: Formatting::addTrailingSlash(input: $basePath));
         /**
          * Force the router to rebuild next time we need it.
@@ -206,6 +220,21 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     public function hasRouteCache(): bool
     {
         return $this->routeCache !== null;
+    }
+
+    public function routeIsCached(): bool
+    {
+        return $this->routeCache?->exists() ?? false;
+    }
+
+    public function clearRouteCache(): void
+    {
+        $this->routeCache?->clear();
+    }
+
+    public function getRouteCachePath(): ?string
+    {
+        return $this->routeCache?->path();
     }
 
     /**
@@ -272,7 +301,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      * @return Route
      * @throws TooLateToAddNewRouteException
      */
-    public function map(array $verbs, string $uri, callable|string $callback): Routable
+    public function map(array $verbs, string $uri, array|callable|string $callback): Routable
     {
         /**
          * Force all verbs to be uppercase.
@@ -345,12 +374,23 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      * Load routes from a JSON file.
      *
      * @param string $path Path to the JSON routes file.
-     * @throws TooLateToAddNewRouteException|TypeException
+     * @throws TooLateToAddNewRouteException
+     * @throws TypeException
+     * @throws JsonException
      */
     public function loadRoutesFromJson(string $path): void
     {
         $content = file_get_contents(filename: $path);
-        $json    = json_decode(json: $content, associative: true);
+
+        if ($content === false) {
+            throw new RuntimeException("Unable to read routes file [{$path}].");
+        }
+
+        $json = json_decode(json: $content, associative: true, flags: JSON_THROW_ON_ERROR);
+
+        if (! is_array($json) || ! isset($json['routes']) || ! is_array($json['routes'])) {
+            throw new RuntimeException("Routes file [{$path}] must contain a routes array.");
+        }
 
         foreach ($json['routes'] as $route) {
             if (! empty($route['group'])) {
@@ -365,7 +405,8 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      * Converts JSON routes to a route object.
      *
      * @param array $route Array from JSON file.
-     * @throws TooLateToAddNewRouteException|TypeException
+     * @throws TooLateToAddNewRouteException
+     * @throws TypeException
      */
     public function handleSimpleJsonRoutes(array $route): void
     {
@@ -378,7 +419,8 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
      * Converts JSON group routes to a route object.
      *
      * @param array $route Array form JSON file.
-     * @throws TooLateToAddNewRouteException|TypeException
+     * @throws TooLateToAddNewRouteException
+     * @throws TypeException
      */
     public function handleGroupJsonRoutes($route): void
     {
@@ -393,8 +435,6 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
 
     protected function buildRoutes(): void
     {
-        $this->routeCollector->basePath = $this->basePath;
-
         $this->fireEvents(name: RoutingEventHandler::EVENT_BOOT, arguments: [
             'bootmanagers' => $this->bootManagers,
         ]);
@@ -415,6 +455,17 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD_ROUTES, arguments:[
             'routes' => $this->routes,
         ]);
+
+        $this->registerRoutesWithCollector();
+
+        $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
+            'loadedRoutes' => $this->routes,
+        ]);
+    }
+
+    private function registerRoutesWithCollector(): void
+    {
+        $this->routeCollector->basePath = $this->basePath;
 
         foreach ($this->routes as $route) {
             $uri = $this->convertRouteToRouteCollectorRouterUri(route: $route, routeCollector: $this->routeCollector);
@@ -440,10 +491,6 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
                 $route
             );
         }
-
-        $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
-            'loadedRoutes' => $this->routes,
-        ]);
     }
 
     protected function createRoutes(): void
@@ -453,85 +500,186 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         }
 
         if ($this->routeCache !== null) {
+            if ($this->routeCache->exists()) {
+                $compiled = $this->routeCache->read();
 
-            $compiled = $this->routeCache->get(function () {
-                $this->buildRoutes();
-                return $this->exportCompiledRoutes();
-            });
-
-            if (! empty($compiled)) {
-                $this->importCompiledRoutes($compiled);
-                $this->routesCreated = true;
-                return;
+                if ($this->isCurrentRouteCache($compiled)) {
+                    $this->importCompiledRoutes($compiled['routes']);
+                    $this->routesCreated = true;
+                    return;
+                }
             }
+
+            $this->buildRoutes();
+            $this->routeCache->put($this->exportCompiledRoutes());
+            $this->routesCreated = true;
+            return;
         }
 
         $this->buildRoutes();
         $this->routesCreated = true;
     }
 
-    protected function exportCompiledRoutes(): array
+    private function isCurrentRouteCache(array $compiled): bool
     {
-        if ($this->routeCache === null) {
-            // If caching is disabled, do not import / unserialize anything.
-            return [];
+        if (($compiled['version'] ?? null) !== self::ROUTE_CACHE_VERSION) {
+            return false;
         }
 
+        return isset($compiled['routes']) && is_array($compiled['routes']);
+    }
+
+    protected function exportCompiledRoutes(): array
+    {
         $compiled = [];
 
-        foreach ($this->routeCollector->routes as $r) {
-            [$method, $subdomain, $route, $target, $name] = $r;
-
+        foreach ($this->routes as $route) {
             $compiled[] = [
-                $method,
-                $subdomain,
-                $route,
-                opis_serialize($target),
-                $name,
+                'methods'     => $route->methods,
+                'uri'         => $route->uri,
+                'action'      => $this->serializeRouteCacheValue(
+                    $route->getRouteAction()->getAction(),
+                    "action for route [{$route->uri}]"
+                ),
+                'name'        => $route->name,
+                'domain'      => $route->getDomain(),
+                'subdomain'   => $route->getSubDomain(),
+                'schemes'     => $route->getSchemes(),
+                'constraints' => $route->paramConstraints,
+                'namespace'   => $route->getNamespace(),
+                'middleware'  => $this->serializeRouteCacheValue(
+                    $route->getMiddlewares(),
+                    "middleware for route [{$route->uri}]"
+                ),
             ];
         }
 
-        return $compiled;
+        return [
+            'version' => self::ROUTE_CACHE_VERSION,
+            'routes'  => $compiled,
+        ];
     }
 
+    private function serializeRouteCacheValue(mixed $value, string $description): string
+    {
+        try {
+            return base64_encode(opis_serialize($value));
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Unable to cache {$description}: {$exception->getMessage()}",
+                previous: $exception
+            );
+        }
+    }
+
+    private function unserializeRouteCacheValue(string $value, string $description): mixed
+    {
+        $serialized = base64_decode($value, true);
+
+        if ($serialized === false) {
+            throw new RuntimeException("Invalid encoded {$description} in the route cache.");
+        }
+
+        try {
+            return opis_unserialize($serialized);
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Unable to restore {$description} from the route cache: {$exception->getMessage()}",
+                previous: $exception
+            );
+        }
+    }
+
+    /**
+     * @throws TypeException
+     * @throws RouteNameRedefinedException
+     */
     protected function importCompiledRoutes(array $compiled): void
     {
-        if ($this->routeCache === null) {
-            return;
-        }
+        $routes = [];
 
-        foreach ($compiled as $route) {
-
-            $target = opis_unserialize($route[3]);
-
-            if (! $target instanceof Route) {
-                continue;
+        foreach ($compiled as $index => $definition) {
+            if (! is_array($definition)) {
+                throw new RuntimeException("Invalid route cache definition at index [{$index}].");
             }
 
-            $this->routes[] = $target;
-            $this->routeCollector->domain = $target->getDomain();
+            foreach (['methods', 'uri', 'action', 'middleware'] as $key) {
+                if (! array_key_exists($key, $definition)) {
+                    throw new RuntimeException(
+                        "Route cache definition at index [{$index}] is missing [{$key}]."
+                    );
+                }
+            }
 
-            $this->routeCollector->map(
-                implode(separator: '|', array: $target->methods),
-                $target->getSubDomain() ?? null,
-                Formatting::addTrailingSlash($target->uri),
-                $target,
-                $target->name ?? null
+            if (
+                ! is_array($definition['methods'])
+                || ! is_string($definition['uri'])
+                || ! is_string($definition['action'])
+                || ! is_string($definition['middleware'])
+            ) {
+                throw new RuntimeException("Invalid route cache definition at index [{$index}].");
+            }
+
+            $action = $this->unserializeRouteCacheValue(
+                $definition['action'],
+                "action at route cache index [{$index}]"
             );
 
-            /**
-             * Also register URI without trailing slash
-             */
-            $this->routeCollector->map(
-                implode(separator: '|', array: $target->methods),
-                $target->getSubDomain() ?? null,
-                Formatting::removeTrailingSlash($target->uri),
-                $target
+            $route = new Route(
+                methods: $definition['methods'],
+                uri: $definition['uri'],
+                action: $action,
+                defaultNamespace: $definition['namespace'] ?? null,
+                invoker: $this->invoker,
+                middlewareResolver: $this->middlewareResolver
             );
+
+            if (($definition['name'] ?? null) !== null) {
+                $route->name($definition['name']);
+            }
+
+            if (array_key_exists('domain', $definition)) {
+                $route->domain($definition['domain']);
+            }
+
+            if (array_key_exists('subdomain', $definition)) {
+                $route->subDomain($definition['subdomain']);
+            }
+
+            if (! empty($definition['schemes'])) {
+                $route->setScheme(...$definition['schemes']);
+            }
+
+            if (! empty($definition['constraints'])) {
+                $route->where($definition['constraints']);
+            }
+
+            $middleware = $this->unserializeRouteCacheValue(
+                $definition['middleware'],
+                "middleware at route cache index [{$index}]"
+            );
+
+            if (! is_array($middleware)) {
+                throw new RuntimeException("Invalid middleware at route cache index [{$index}].");
+            }
+
+            if ($middleware !== []) {
+                $route->middleware($middleware);
+            }
+
+            $routes[] = $route;
         }
 
+        $this->routes = $routes;
+
+        if ($this->routeCollector instanceof RouteCollector) {
+            $this->routeCollector->clearRoutes();
+        }
+
+        $this->registerRoutesWithCollector();
+
         $this->fireEvents(name: RoutingEventHandler::EVENT_LOAD, arguments: [
-            'loadedCacheRoutes' => $compiled,
+            'loadedCacheRoutes' => $this->routes,
         ]);
     }
 
@@ -551,12 +699,14 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
 
         if ($override === '') {
             $body = $request->getParsedBody();
-            if (is_array($body) && isset($body['_method'])) {
+            if (is_array($body) && isset($body['_method']) && is_string($body['_method'])) {
                 $override = $body['_method'];
             }
         }
 
-        if ($override !== '') {
+        $override = trim($override);
+
+        if ($override !== '' && preg_match("/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/D", $override) === 1) {
             return $request->withMethod(strtoupper($override));
         }
 
@@ -582,17 +732,27 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     public function match(ServerRequestInterface $serverRequest): ResponseInterface
     {
         $serverRequest = $this->normalizeHttpMethod($serverRequest);
+        $this->currentRoute = null;
 
         $this->fireEvents(name: RoutingEventHandler::EVENT_INIT);
         $this->createRoutes();
 
         $uri = $this->request->getRewriteUrl() ?? $serverRequest->getUri()->getPath();
 
-        $collectorRoute = $this->routeCollector->match(
-            requestHost: $serverRequest->getUri()->getHost(),
-            requestUrl: $uri,
-            requestMethod: $serverRequest->getMethod()
-        );
+        if ($this->routeCollector instanceof RouteCollector) {
+            $collectorRoute = $this->routeCollector->match(
+                requestHost: $serverRequest->getUri()->getHost(),
+                requestUrl: $uri,
+                requestMethod: $serverRequest->getMethod(),
+                requestScheme: $serverRequest->getUri()->getScheme()
+            );
+        } else {
+            $collectorRoute = $this->routeCollector->match(
+                requestHost: $serverRequest->getUri()->getHost(),
+                requestUrl: $uri,
+                requestMethod: $serverRequest->getMethod()
+            );
+        }
 
         $route  = $collectorRoute['target'] ?? null;
         $params = new RouteParams(params: $collectorRoute['params'] ?? []);
@@ -626,6 +786,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         RouteParams $params
     ): ResponseInterface {
         $serverRequest = $serverRequest
+            ->withAttribute(self::class, $route)
             ->withAttribute(RouteAttributes::ROUTE, $route)
             ->withAttribute(RouteAttributes::PARAMS, $params)
             ->withAttribute(RouteAttributes::URI, $route->uri)
@@ -792,13 +953,13 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
     }
 
     /**
-     * Get current route name.
+     * Get the current route name.
      *
      * @return null|string Current route name.
      */
     public function currentRouteName(): ?string
     {
-        return $this->currentRoute->name;
+        return $this->currentRoute?->name;
     }
 
     /**
@@ -876,7 +1037,7 @@ class Router implements Psr7Router, Mappable, MiddlewareInterface
         $request = $request->withAttribute(self::class, $this->currentRoute);
         $response = $this->match($request);
 
-        if ($response instanceof JsonResponseFactory) {
+        if ($this->currentRoute === null) {
             return $handler->handle($request->withAttribute(self::class, 'Not Found'));
         }
 

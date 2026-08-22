@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Qubus\Routing\Route;
 
 use Closure;
+use Invoker\Exception\InvocationException;
+use Invoker\Exception\NotCallableException;
+use Invoker\Exception\NotEnoughParametersException;
 use Psr\Http\Message\ServerRequestInterface;
 use Qubus\Routing\Controller\ControllerMiddlewareDelegate;
 use Qubus\Routing\Controller\ControllerMiddlewarePipe;
@@ -32,11 +35,13 @@ use function is_callable;
 use function is_object;
 use function is_string;
 use function method_exists;
+use function str_contains;
 use function sprintf;
 use function stripos;
 
 class RouteAction
 {
+    protected mixed $action;
     protected mixed $callable;
     protected mixed $controller;
     protected ?Invoker $invoker = null;
@@ -49,16 +54,31 @@ class RouteAction
      *
      * Actions created with a Controller string (e.g. `MyController@myMethod`) are lazy loaded
      * and the Controller class will only be instantiated when required.
+     *
+     * @param mixed $action
+     * @param string|null $namespace
+     * @param Invoker|null $invoker
+     * @throws RouteControllerNotFoundException
+     * @throws RouteMethodNotFoundException
+     * @throws RouteParseException
      */
     public function __construct(mixed $action, ?string $namespace = null, ?Invoker $invoker = null)
     {
         $this->namespace = $namespace;
         $this->invoker   = $invoker;
+        $this->action    = $action;
         $this->callable  = $this->createCallableFromAction($action);
     }
 
     /**
      * Invoke the action.
+     *
+     * @param ServerRequestInterface $request
+     * @param RouteParams $params
+     * @return mixed
+     * @throws InvocationException
+     * @throws NotCallableException
+     * @throws NotEnoughParametersException
      */
     public function invoke(ServerRequestInterface $request, RouteParams $params): mixed
     {
@@ -85,16 +105,43 @@ class RouteAction
     /**
      * If the action is a Controller string, a factory callable is
      * returned to allow for lazy loading.
+     *
+     * @param mixed $action
+     * @return callable
+     * @throws RouteControllerNotFoundException
+     * @throws RouteMethodNotFoundException
+     * @throws RouteParseException
      */
     private function createCallableFromAction(mixed $action): callable
     {
+        if (
+            ! is_callable($action)
+            && is_array($action)
+            && isset($action[0], $action[1])
+            && is_string($action[0])
+            && is_string($action[1])
+        ) {
+            $action = $this->resolveController($action);
+            return $this->convertClassStringToFactory($action[0] . '@' . $action[1]);
+        }
+
         /**
          * Check if this looks like it could be a class/method string.
          */
         if (! is_callable(value: $action) && is_string(value: $action)) {
+            if (! str_contains($action, '@') && class_exists($action) && method_exists($action, '__invoke')) {
+                $action .= '@__invoke';
+            }
+
             return $this->convertClassStringToFactory($action);
         }
+
         return $action;
+    }
+
+    public function getAction(): mixed
+    {
+        return $this->action;
     }
 
     /**
@@ -234,13 +281,17 @@ class RouteAction
         if ($this->isControllerAction()) {
             return $this->controllerName . '@' . $this->controllerMethod;
         }
-        if (is_callable($this->callable, false, $callableName)) {
-            [$controller, $method] = explode(separator: '::', string: (string) $callableName);
 
-            if ($controller === 'Closure') {
-                return $controller;
+        if ($this->callable instanceof Closure) {
+            return 'Closure';
+        }
+
+        if (is_callable($this->callable, false, $callableName)) {
+            if (! str_contains((string) $callableName, '::')) {
+                return (string) $callableName;
             }
 
+            [$controller, $method] = explode(separator: '::', string: (string) $callableName, limit: 2);
             return $controller . '@' . $method;
         }
 

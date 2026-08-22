@@ -21,14 +21,14 @@ trait RouteMapperAware
     /**
      * Add a route to the map.
      */
-    abstract public function map(array $verbs, string $uri, callable|string $callback): Routable;
+    abstract public function map(array $verbs, string $uri, array|callable|string $callback): Routable;
 
     /**
      * Add a route that responds to any HTTP method.
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function any(string $uri, callable|string $callback): Routable
+    public function any(string $uri, array|callable|string $callback): Routable
     {
         return $this->map(
             [
@@ -52,7 +52,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function get(string $uri, callable|string $callback): Routable
+    public function get(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_GET], $uri, $callback);
     }
@@ -62,7 +62,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function post(string $uri, callable|string $callback): Routable
+    public function post(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_POST], $uri, $callback);
     }
@@ -72,7 +72,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function patch(string $uri, callable|string $callback): Routable
+    public function patch(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_PATCH], $uri, $callback);
     }
@@ -82,7 +82,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function put(string $uri, callable|string $callback): Routable
+    public function put(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_PUT], $uri, $callback);
     }
@@ -92,7 +92,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function delete(string $uri, callable|string $callback): Routable
+    public function delete(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_DELETE], $uri, $callback);
     }
@@ -102,7 +102,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function head(string $uri, callable|string $callback): Routable
+    public function head(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_HEAD], $uri, $callback);
     }
@@ -112,7 +112,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function options(string $uri, callable|string $callback): Routable
+    public function options(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_OPTIONS], $uri, $callback);
     }
@@ -122,7 +122,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function connect(string $uri, callable|string $callback): Routable
+    public function connect(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_CONNECT], $uri, $callback);
     }
@@ -132,7 +132,7 @@ trait RouteMapperAware
      *
      * @throws TooLateToAddNewRouteException
      */
-    public function trace(string $uri, callable|string $callback): Routable
+    public function trace(string $uri, array|callable|string $callback): Routable
     {
         return $this->map([static::HTTP_METHOD_TRACE], $uri, $callback);
     }
